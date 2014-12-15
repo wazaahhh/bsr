@@ -1,9 +1,10 @@
 
 import numpy as np
+import csv
 import time
 import threading
 from entropy import compute_entropy,normalize
-import boto
+#import boto
 from uuid import getnode as get_mac
 from datetime import datetime
 from mindwave_mobile import ThinkGearProtocol, ThinkGearRawWaveData, ThinkGearEEGPowerData, ThinkGearPoorSignalData, ThinkGearAttentionData, ThinkGearMeditationData
@@ -155,14 +156,31 @@ class BSR():
 
     def experiment(self):
         
+        recentTexts = np.array([r for r in csv.reader(open("recentTexts.csv",'rb'))])
+        print "choose one of the text below by entering a number or paste URL:"
+        if len(recentTexts)>0:
+            for r,rx in enumerate(recentTexts[-10:]):
+                print '%s) %s (URL: %s)'%(r+1,rx[0],rx[1])
+        else:
+            print "no recent text available"
+            
+        input = raw_input("choice : ")
+        try:
+            iInt = int(input)
+            input = iInt
+        except:
+            iInt = None
+            pass
         
-        '''Get input'''
-        input = raw_input('paste article url or text here and press ENTER to start: ')
         
         self.Json['input'] = {'txtUrl' : input}
         
 
         '''Determine if URL or Text, and process accordingly'''
+        
+        if isinstance(input,int):
+            input = recentTexts[-input][1]
+            
         if input[:10] == "http://www" or input[:11] =="https://www":
             try:
                 html = retrieveHtml(input)
@@ -204,26 +222,31 @@ class BSR():
         self.Json['QA'] = dicQA
         self.Json['input']['tEnd'] = time.mktime(datetime.now().timetuple())
         
+        if not isinstance(iInt,int):
+            rTxtFiles = open("recentTexts.csv",'ab+')
+            rTxtFiles.write("%s,%s\n"%(self.Json['text']['title'],self.Json['input']['txtUrl']))
+            rTxtFiles.close()
+        
         try:
             uplodJson(self.Json,re.sub(" ","",self.Json['text']['title']),compress=False)
             print "results successfully uploaded"
             return self.Json
         except:
-            print "failed uploading"
+            print "failed uploading results"
             return self.Json
     
     
     def run(self):
         #S3connectBucket(bucketName)
         tEEG = threading.Thread(target=bsr.readEEG)
+        tEEG.daemon = True
         tEEG.start()
-    
+        
         #try:
         Json = bsr.experiment()
-        #except:
-        #    bsr.onText = False
-        #    print "problem"
         return Json
+        #except:
+        #    print "program terminated"
 
 if __name__ == '__main__':
     
