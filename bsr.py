@@ -12,6 +12,7 @@ from textPrepare import *
 import json
 import zlib
 import requests
+import os
 
 
 def uplodJson(Json,textId,compress=False):
@@ -27,7 +28,56 @@ def uplodJson(Json,textId,compress=False):
     #key.set_contents_from_string()
     r = requests.put('http://brainspeedr.s3.amazonaws.com/bsr/%s/%s/%s.json%s'%(get_mac(),textId,now,extension), data=Json)
 
-  
+
+def listArticles():
+    aDic = {}
+    listA = os.listdir("articles")
+    for i,article  in enumerate(listA):
+        #print i,article
+        J = json.loads(open("articles/" + article,'rb').read())
+        aDic[i+1] = J
+        print "%s. %s by %s (%s)\n"%(i+1,J['title'],J['author'],J['url'])
+    return aDic
+    
+def selectArticles():        
+        aDic = listArticles()
+        print "choose one of the articles above (%s to %s):"%(1,len(aDic))
+        
+        #recentTexts = np.array([r for r in csv.reader(open("recentTexts.csv",'rb'))])
+        #print "\n"*30
+        #print "choose one of the text below by entering a number or paste URL:"
+        #if len(recentTexts)>0:
+        #    for r,rx in enumerate(recentTexts[-10:]):
+        #        print '%s) %s '%(r+1,rx[0])
+        #else:
+        #    print "no recent text available"
+        
+        input = int(raw_input("\nChoice : ")) 
+        cond = input < 1 or input > len(aDic)
+        
+        while cond:
+            print "incorrect choice, try again:"
+            input = int(raw_input("\nChoice : "))
+            cond = input < 1 or input > len(aDic)
+           
+        
+        print "your choice : %s by %s (%s) \nlet's get started..."%(aDic[input]['title'],aDic[input]['author'],aDic[input]['url'])
+        return aDic[input]
+
+
+#def AR1(c=150,phi=0.5,sigma=1):    
+#    return c + phi * self.currentRate + np.random.normal(scale=sigma)
+
+
+
+
+
+        
+def testRun():
+    articleJson = selectArticles()
+    showWords(articleJson)
+
+
 class BSR():
     
     def __init__(self):
@@ -47,8 +97,8 @@ class BSR():
         self.poorSignal = 100
         self.deque = 10
         self.normalized_entropy = [0]
-        self.currentSpeed = 250
-        self.adaptivity = 0.01
+        self.currentRate = 0.125
+        self.adaptivity = -0.005
         self.Json = {}
     
 #    def selectWords(self):
@@ -58,53 +108,66 @@ class BSR():
 #        c = (count <= 5)*(lengths > 5)
 #        return unique[c]
 
-    def updateRate(self):
-        return self.currentSpeed*(1 + (self.adaptivity*self.currentEntropy))
+    def printWord(self,word):
+        '''
+        print "\n" * 10
+        print "\t" *5, "%s"%(word)
+        #print "\t  " *4, "(%.2f,%.0f)"%(self.currentEntropy,self.currentRate)
+        print "\n" * 10
+        '''
+        print "\n" * 5
+        print "\t" *3, "%s"%(word)
+        print "\t" *3, "(%.3f)"%(self.currentRate)
+        print "\n" * 5
 
-    def showWords(self,wordListRead):
-                
-        self.currentSpeed = float(raw_input('Choose your baseline speed (in milliseconds between two words): '))
-        self.adaptivity = float(raw_input('Choose your adaptivity (between -0.02 and 0.02): '))
+
+    def AR1(self,c=0.150,phi=0.075,sigma=0.001):
+        return (1.) * self.currentRate + np.random.normal(scale=sigma)
         
-        self.Json['input']['baseline'] = self.currentSpeed
-        self.Json['input']['adaptivity'] = self.adaptivity
-        self.Json['input']['tStart'] = time.mktime(datetime.now().timetuple())
-        
-        '''clear screen'''
-        print "\n" * 50
+
+    def updateRate(self,treatment):
+        if treatment=="bsr":
+            return self.currentRate*(1 + (self.adaptivity*self.currentEntropy))
+        elif treatment=="AR":
+            return self.AR1()
+        else:
+            return self.currentRate
+
+
+    def showWords(self,articleJson,treatment):
+        txt = articleJson['content']
+        wordListRead = txt.split()
         time.sleep(5)
         
-        words = []
-        baseline = []
-        entropy = []
+        for word in wordListRead:            
+            self.currentRate = self.updateRate(treatment)
+            
+            if word[-1] in [",","-"]:
+                self.printWord(word)
+                time.sleep(self.currentRate*1.5)
+            elif word[-1] in [".",";",":"]:
+                self.printWord(word)
+                time.sleep(self.currentRate*3)
+            elif word[-1]=="|":
+                self.printWord(word[:-1])
+                time.sleep(self.currentRate*4)
+            else:
+                self.printWord(word)
+                time.sleep(self.currentRate)
+
+    
+
+    def experiment(self):
+        articleJson = selectArticles()
+        self.showWords(articleJson,treatment)
         
-        for word in wordListRead:
-
-            self.currentSpeed = self.updateRate()
-            
-            print "\n" * 10
-            print "\t" *5, "%s"%(word)
-            #print "\t  " *4, "(%.2f,%.0f)"%(self.currentEntropy,self.currentSpeed)
-            print "\n" * 10
-                        
-            time.sleep(self.currentSpeed/1000.)
-    
-            words.append(word)
-            baseline.append(self.currentSpeed)
-            entropy.append(self.entropy)
-            
-        self.onText = False
-    
-        return {'words' : words, 'baseline' : baseline, 'entropy' : entropy}
-
     
     def readEEG(self):
         
         Median = []
         Std = []
-        
         for pkt in ThinkGearProtocol(self.port).get_packets():
-            
+            #print pkt
             for d in pkt:
  
                 if isinstance(d, ThinkGearPoorSignalData):
@@ -150,91 +213,8 @@ class BSR():
 
             if self.onText == False:
                 break
-
-
-
-
-    def experiment(self):
-        
-        recentTexts = np.array([r for r in csv.reader(open("recentTexts.csv",'rb'))])
-        print "choose one of the text below by entering a number or paste URL:"
-        if len(recentTexts)>0:
-            for r,rx in enumerate(recentTexts[-10:]):
-                print '%s) %s (URL: %s)'%(r+1,rx[0],rx[1])
-        else:
-            print "no recent text available"
-            
-        input = raw_input("choice : ")
-        try:
-            iInt = int(input)
-            input = iInt
-        except:
-            iInt = None
-            pass
-        
-        
-        self.Json['input'] = {'txtUrl' : input}
-        
-
-        '''Determine if URL or Text, and process accordingly'''
-        
-        if isinstance(input,int):
-            input = recentTexts[-input][1]
-            
-        if input[:10] == "http://www" or input[:11] =="https://www":
-            try:
-                html = retrieveHtml(input)
-            except:
-                print "webpage could not be retrieved"
-            
-            try:
-                dicText = cleanHtmlToText(html)
-                dicText = prepareText(dicText)
-            except:
-                print "problem cleaning html or preparing dicText"
-                
-        else:
-            try:
-                dicText = prepareText({'text' : input})
-            except:
-                print "problem preparing dicText"
-
-        
-        self.Json['text'] = dicText
-        
-        
-        '''Show words'''
-        dicShowWords = self.showWords(dicText['wordListRead'])
-        self.Json['showWords'] = dicShowWords
-        
-        '''Questions'''
-        dicQ = selectWords(dicText['wordList'],questions,countBoundaries=[0,5],lenBoundaries=[5,100])
-        
-        dicA = {}
-        
-        for k,key in enumerate(dicQ.keys()):
-            print "Question %s / %s "%(k+1,len(dicQ))
-            dicA[key] = raw_input('how many times the word "%s" has appeared in the text?  '%key)
-            
-        
-        dicQA = {'Q' : dicQ ,'A' : dicA}
-        
-        self.Json['QA'] = dicQA
-        self.Json['input']['tEnd'] = time.mktime(datetime.now().timetuple())
-        
-        if not isinstance(iInt,int):
-            rTxtFiles = open("recentTexts.csv",'ab+')
-            rTxtFiles.write("%s,%s\n"%(self.Json['text']['title'],self.Json['input']['txtUrl']))
-            rTxtFiles.close()
-        
-        try:
-            uplodJson(self.Json,re.sub(" ","",self.Json['text']['title']),compress=False)
-            print "results successfully uploaded"
-            return self.Json
-        except:
-            print "failed uploading results"
-            return self.Json
     
+
     
     def run(self):
         #S3connectBucket(bucketName)
@@ -243,6 +223,7 @@ class BSR():
         tEEG.start()
         
         #try:
+        
         Json = bsr.experiment()
         return Json
         #except:
@@ -258,9 +239,11 @@ if __name__ == '__main__':
     questions = 3
     
     global Json
+        
+    global treatment
+    treatment = "constant"
     
     bsr = BSR()
-    
     #bsr.readEEG()
     
     Json = bsr.run()
