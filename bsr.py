@@ -13,6 +13,9 @@ import json
 import zlib
 import requests
 import os
+from nltk.tokenize import word_tokenize
+from nltk.tag import pos_tag
+from nltk import FreqDist
 
 
 def uplodJson(Json,textId,compress=False):
@@ -29,18 +32,19 @@ def uplodJson(Json,textId,compress=False):
     r = requests.put('http://brainspeedr.s3.amazonaws.com/bsr/%s/%s/%s.json%s'%(get_mac(),textId,now,extension), data=Json)
 
 
-def listArticles():
+def listArticles(folder):
     aDic = {}
-    listA = os.listdir("articles")
+    listA = os.listdir("articles/%s"%folder)
     for i,article  in enumerate(listA):
         #print i,article
-        J = json.loads(open("articles/" + article,'rb').read())
+        print "articles/%s/%s"%(folder,article)
+        J = json.loads(open("articles/%s/%s"%(folder,article),'rb').read())
         aDic[i+1] = J
         print "%s. %s by %s (%s)\n"%(i+1,J['title'],J['author'],J['url'])
     return aDic
     
-def selectArticles():        
-        aDic = listArticles()
+def selectArticles(folder="in_use"):        
+        aDic = listArticles(folder)
         print "choose one of the articles above (%s to %s):"%(1,len(aDic))
         
         #recentTexts = np.array([r for r in csv.reader(open("recentTexts.csv",'rb'))])
@@ -65,18 +69,101 @@ def selectArticles():
         return aDic[input]
 
 
-#def AR1(c=150,phi=0.5,sigma=1):    
-#    return c + phi * self.currentRate + np.random.normal(scale=sigma)
+def findCommonNouns(aDic,minFreq=2):
+    #dicTypeWords = {"propernouns":'NNP','nouns':'NN'}
+    tagged_sent = pos_tag(word_tokenize(aDic['content']))
+    
+    wordDic = {}
+    fdist= FreqDist(tagged_sent)
+    for i,ix in enumerate(tagged_sent):
+        print i,ix
+        if ix[1] == 'NN' and fdist[ix] >=minFreq:            
+            try:
+                pos = wordDic[ix[0]]['pos']
+                pos.append(i)
+            except:
+                pos = [i]
+            wordDic[ix[0]] = {'pos':pos,'freq':fdist[ix]} 
+    return wordDic
+
+def commmonNounsList(minFreq=5,storeFile=False):
+    folder = "backup"
+    listA = os.listdir("articles/%s"%folder)
+    
+    list = []
+    
+    for article in listA:
+        aDic = json.loads(open("articles/%s/%s"%(folder,article),'rb').read())
+        l = findCommonNouns(aDic,minFreq=minFreq)
+        list += l
+      
+    list = np.array(zip(*list))
+    l2 = np.array(map(int,list[1]))
+    o = np.argsort(l2)[::-1]    
+    list = np.array(zip(*list))[o]
+    
+    if storeFile:
+        output=open("wordlists/common_words",'wb')
+        output.write("\n".join(np.unique(zip(*list)[0])))
+        output.close()
+    return list
 
 
+def randomCommonNounFromList(max):
+    l = np.random.randint(max)
+    list = open("wordlists/common_words_cleaned",'r').read().splitlines()
+    np.random.shuffle(list)
+    return list[:l]
 
 
-
+def findWordTypeSeries(tagged_sent,wordTypeSeries):
+    from numpy.lib.stride_tricks import as_strided
         
-def testRun():
-    articleJson = selectArticles()
-    showWords(articleJson)
+    wordTypeSeries = np.array(wordTypeSeries)
+        
+    typeSeries = tagged_sent[1]
+    
+    a_view = as_strided(typeSeries, shape=(len(typeSeries) - len(wordTypeSeries) + 1, len(wordTypeSeries)),strides=(typeSeries.dtype.itemsize,) * 2)
+    
+    index = np.where(np.all(a_view == wordTypeSeries, axis=1))[0]
 
+    output = {}
+
+    for i in index:
+        try:
+            output[' '.join(tagged_sent[0][i:i+len(wordTypeSeries)])].append(i)
+        except:
+            output[' '.join(tagged_sent[0][i:i+len(wordTypeSeries)])] = [i]
+ 
+    return output
+ 
+ 
+def findProperNouns(textString,minFreq=1):
+    '''find all series of words in a text, following a series of types as tagged by "pos_tag" in nltk'''
+    #types = [['NNP'],['NNP','NNP'],['NNP','IN','NNP'],['NNP','IN','NNP','NNP']]
+    types = [['NNP']] 
+    
+    tagged_sent = np.array(zip(*pos_tag(word_tokenize(textString))))
+ 
+    dicIndexes = {}
+    listLength = []
+ 
+    wordDic = {}
+ 
+    for type in types:
+        dic = findWordTypeSeries(tagged_sent,type)
+        for item in dic.iteritems():
+            if len(item[1]) >= minFreq:
+                wordDic[item[0]] = {'freq':len(item[1]), 'pos':item[1]}        
+    return wordDic
+
+def question3(aDic,max=6):
+    textNouns = aDic['nouns'].keys()
+    np.random.shuffle(textNouns)    
+    commonNouns = randomCommonNounFromList(max-1)
+    wordlist = commonNouns + textNouns[:max-len(commonNouns)]
+    np.random.shuffle(wordlist)
+    return wordlist
 
 class BSR():
     
@@ -246,7 +333,7 @@ if __name__ == '__main__':
     bsr = BSR()
     #bsr.readEEG()
     
-    Json = bsr.run()
+    #Json = bsr.run()
 #    '''
     
         #print bsr.onText
