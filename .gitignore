@@ -4,3 +4,7 @@ articles/*
 textPrepare.pyc
 
 *.pyc
+
+articles/in_use/automatingDataScientists.json
+
+articles/in_use/automatingDataScientists.json

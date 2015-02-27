@@ -35,8 +35,14 @@ def uplodJson(Json,textId,compress=False):
 def listArticles(folder):
     aDic = {}
     listA = os.listdir("articles/%s"%folder)
+    
+    try:
+        rm = np.argwhere(np.array(listA)=='.DS_Store')[0]
+        listA = np.delete(listA,rm)
+    except:
+        pass
+        
     for i,article  in enumerate(listA):
-        #print i,article
         print "articles/%s/%s"%(folder,article)
         J = json.loads(open("articles/%s/%s"%(folder,article),'rb').read())
         aDic[i+1] = J
@@ -138,10 +144,12 @@ def findWordTypeSeries(tagged_sent,wordTypeSeries):
     return output
  
  
-def findProperNouns(textString,minFreq=1):
+def findProperNouns(aDic,minFreq=1):
     '''find all series of words in a text, following a series of types as tagged by "pos_tag" in nltk'''
     #types = [['NNP'],['NNP','NNP'],['NNP','IN','NNP'],['NNP','IN','NNP','NNP']]
     types = [['NNP']] 
+    
+    textString = aDic['content']
     
     tagged_sent = np.array(zip(*pos_tag(word_tokenize(textString))))
  
