@@ -169,7 +169,7 @@ def question3(aDic,max=6):
     textNouns = aDic['nouns'].keys()
     np.random.shuffle(textNouns)    
     commonNouns = randomCommonNounFromList(max-1)
-    wordlist = commonNouns + textNouns[:max-len(commonNouns)]
+    wordlist = np.unique(commonNouns + textNouns[:max-len(commonNouns)])
     np.random.shuffle(wordlist)
     return wordlist
 
@@ -257,6 +257,8 @@ class BSR():
         self.showWords(articleJson,treatment)
         
     
+
+    
     def readEEG(self):
         
         Median = []
@@ -296,6 +298,7 @@ class BSR():
                             self.entropy.append(compute_entropy(self.raw_log,1))
                         
                         self.normalized_entropy.append(normalize(self.entropy[-self.deque:])[-1])
+                        
                         '''          
                         print "raw values: median: %.2f (medianM = %.2f), std: %.2f (medianStd = %.2f) " %(Median[-1],np.median(Median[-100:]),Std[-1],np.median(Std[-100:]))                          
                         print " entropy : %.3f (mean: %.3f, median: %.3f, std: %.3f)"%(self.entropy[-1],np.mean(self.entropy[-self.deque:]),np.median(self.entropy[-self.deque:]),np.std(self.entropy[-self.deque:]))
@@ -315,14 +318,30 @@ class BSR():
         #S3connectBucket(bucketName)
         tEEG = threading.Thread(target=bsr.readEEG)
         tEEG.daemon = True
-        tEEG.start()
-        
-        #try:
+        try:
+            tEEG.start()
+        except:
+            print "brainscanner not connected"
+            return
         
         Json = bsr.experiment()
+
+        tEEG.stop()
         return Json
+    
+    
         #except:
         #    print "program terminated"
+
+
+
+
+
+
+
+
+
+
 
 if __name__ == '__main__':
     
@@ -336,12 +355,15 @@ if __name__ == '__main__':
     global Json
         
     global treatment
-    treatment = "constant"
+
+    treatment = "bsr"
+    #treatment = "AR" 
+    #treatment = "constant"
     
     bsr = BSR()
     #bsr.readEEG()
     
-    #Json = bsr.run()
+    Json = bsr.run()
 #    '''
     
         #print bsr.onText

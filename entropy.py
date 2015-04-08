@@ -23,7 +23,6 @@ def entropy(power_spectrum,q):
 
 def compute_entropy(raw_data,q=1):
 
-
     ps = np.array(pSpectrum(raw_data))
 
     ps = ps/np.sum(ps)
