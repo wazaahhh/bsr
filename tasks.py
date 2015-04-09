@@ -183,7 +183,56 @@ def generateQuestions(articleJson):
     return [{'question':'Please tell us briefly about the article you have just read (max. 100 words).', 'type':'free_response'},
     {'question':'Can you remember people, places, organizations and institutions mentioned in the article? (List one per line).', 'type':'free_recall'},
     {'question':'Which of these words appeared in the text?', 'type':'multiple_choice', 'choices':question3(articleJson,max=6)}]
+    
+def showQuestionsTUI(articleJson):
+    '''asks questions on the terminal user interface (TUI)'''
+    
+    questions = generateQuestions(articleJson)
+    
+    for q in questions:
+        if q['type'] == 'free_response':
+            try:
+                print 'Please tell us briefly about the article you have just read (max. 100 words) :'
+                print "(Press Enter to go to next question.)"
+                r1start = time.time()
+                response1 = raw_input()
+                r1end = time.time()
+                print "\n\n"
+            except NameError:
+                pass
 
+        if q['type'] == 'free_recall':
+            try:
+                print 'Can you remember people, places, organizations and institutions mentioned in the article?'
+                print "(Enter names separated by commas and Press Enter to go to next question.)"
+                r2start = time.time()
+                response2 = raw_input()
+                r2end = time.time()
+                print "\n\n"
+                
+            except NameError:
+                pass
+        
+        if q['type'] == 'multiple_choice':
+            try:
+                print 'Which of these words appeared in the text?'
+                print '(Enter comma separated numbers corresponding to words found in the text. Press Enter to finish.)' 
+                for i,c in enumerate(q['choices']):
+                    print "%s. %s"%(i,c)
+                print "\n"
+                r3start = time.time()
+                response3 = raw_input()
+                r3end = time.time()
+                print "\n\n"
+            except NameError:
+                pass
+        
+    return {'r1' : {'t0': r1start, 't1' : r1end, 'response' : response1}, 
+            'r2' : {'t0': r2start, 't1' : r2end, 'response' : response2.split(",")},
+            'r3' : {'t0': r3start, 't1' : r3end, 'response' : response3.split(",")}}
+    
+    
+    
 def sendQuestions(self,questions):
     self.postToServer('/show_questions', json.dumps(questions))
 
@@ -304,10 +353,12 @@ class bsr():
         t = [ item - t0 for item in self.time]
         t = t[1:]
         
+        time.sleep(1)
+        responses = showQuestionsTUI(articleJson)
         
         eegData = MW.getRawEEG()
         
-        expDic  = {'exp': {'rate': self.rate,'entropy' : self.entropy,'normalized_entropy' : self.normalized_entropy,'words' : self.words, 'timestamps' : t,'t0':t0},'eegData':eegData}
+        expDic  = {'exp': {'rate': self.rate,'entropy' : self.entropy,'normalized_entropy' : self.normalized_entropy,'words' : self.words, 'timestamps' : t,'t0':t0},'eegData':eegData, "responses" : responses }
         return expDic
     
         '''
@@ -328,7 +379,7 @@ class bsr():
         
         print "\n" * 5
         print "\t" *3, "%s"%(word)
-        print "\t" *3, "(%.3f)"%(self.currentRate)
+        #print "\t" *3, "(%.3f)"%(self.currentRate)
         print "\n" * 5
     
 
@@ -386,8 +437,7 @@ def runTest():
     
 if __name__ == '__main__':
     print "blah"
-    
-    J = runTest()
+    #J = runTest()
     
     
     
