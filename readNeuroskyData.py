@@ -57,7 +57,7 @@ class readMindwave():
             return
      
 
-    def connectionCheck(self,tests = 2,sleepTime = 4):
+    def connectionCheck(self,tests = 2,sleepTime = 2):
         '''Check connection by performing 5 consecutive dumps'''
         lRaw = 0
         for i in range(tests):
@@ -66,9 +66,9 @@ class readMindwave():
             
             if len(raw['sigqual']) > 0:
                 lRaw +=1
-                print "check %s of %s : passed (%s)" %(i,tests,len(raw['sigqual'])) 
+                print "connection check %s of %s : passed (%s)" %(i+1,tests,len(raw['sigqual'])) 
             else:
-                print "check %s of %s : failed (%s)" %(i,tests,len(raw['sigqual']))
+                print "connection check %s of %s : failed (%s)" %(i+1,tests,len(raw['sigqual']))
                  
         return lRaw
     
@@ -101,7 +101,7 @@ class readMindwave():
             
             sigqual = self.qualityCheck(duration = 2)
     
-        print "signal quality : good"
+        print "(signal quality : good)"
     
     
     def runTest(self,duration):
