@@ -30,7 +30,7 @@ def uplodJson(Json,token,task,compress=False):
     now = datetime.utcnow().strftime("%Y_%m_%d/%H%M%S")
     #key = bucket.new_key("/bsr/%s/%s/%s.json%s"%(get_mac(),textId,now,extension))
     #key.set_contents_from_string()
-    r = requests.put('http://brainspeedr.s3.amazonaws.com/bsr/%s/%s/%s/%s/%s_%s.%s'%(experiment_version,now[:10],get_mac(),token,now[11:],task,extension), data=Json)
+    r = requests.put('http://brainspeedr.s3.amazonaws.com/bsr/v%s/%s/%s/%s/%s_%s.%s'%(experiment_version,now[:10],get_mac(),token,now[11:],task,extension), data=Json)
 
 
 def configureExperiment():
