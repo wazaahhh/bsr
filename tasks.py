@@ -84,7 +84,7 @@ def showArticleList(articles):
     
     for i,ix in enumerate(index):
         print "\n"
-        niceTextDisplay("%s. %s"%(i+1,description[ix]),lineSleep=0.3)
+        niceTextDisplay("%s. %s"%(i+1,description[ix]),lineSleep=0.1)
 
     print "\n"
     try:
@@ -390,6 +390,18 @@ def generateFinalQuestions():
                  ]
 
     return questions
+
+
+def multipleChoiceQuestion(listChoices):
+    for i,c in enumerate(listChoices):
+        print "%s. %s"%(i+1,c)
+        
+    l = len(listChoices)
+    r = raw_input("(Enter any value between 1 and %s) : "%l)
+    while int(r) not in range(1,l+1):
+        r = raw_input("incorrect choice, please select a value between 1 and %s) : "%l)
+    return listChoices[int(r)-1]
+    
 
 def showFinalQuestionsTUI():
     

@@ -30,7 +30,7 @@ def uplodJson(Json,token,task,compress=False):
     now = datetime.utcnow().strftime("%Y_%m_%d/%H%M%S")
     #key = bucket.new_key("/bsr/%s/%s/%s.json%s"%(get_mac(),textId,now,extension))
     #key.set_contents_from_string()
-    r = requests.put('http://brainspeedr.s3.amazonaws.com/bsr/v%s/%s/%s/%s/%s_%s.%s'%(experiment_version,now[:10],get_mac(),token,now[11:],task,extension), data=Json)
+    r = requests.put('http://brainspeedr.s3.amazonaws.com/bsr/v%s/%s/%s/%s/%s_%s.%s?x-amz-acl=bucket-owner-full-control'%(experiment_version,now[:10],get_mac(),token,now[11:],task,extension), data=Json)
 
 
 def configureExperiment():
@@ -63,7 +63,7 @@ def configureExperiment():
 
 def runExperiment():
     
-    token = str(uuid.uuid4())[-12:]
+    token = str(uuid.uuid4())[-5:]
 
     
     J = {}
@@ -114,10 +114,10 @@ def runExperiment():
     return J
 
 
-def runExperiment2(preliminaryTasks=True):
+def runExperiment2(preliminaryTasks=True,randomTreatment=True):
     
     
-    token = str(uuid.uuid4())[-12:]
+    token = str(uuid.uuid4())[-5:]
 
     i=0
     J = {}
@@ -168,9 +168,14 @@ def runExperiment2(preliminaryTasks=True):
         choice = showArticleList(articles)
         articles.remove(choice)
 
-        
-        random.shuffle(treatments)
-        f = {'func' : bsr.RSVP, 'params' : (aDic[choice], treatments[0])}
+        if randomTreatment:
+            random.shuffle(treatments)
+            treatment = treatments[0]
+        else:
+            print "Select the brainspeedreader of your choice: "
+            treatment = multipleChoiceQuestion(treatments)
+            
+        f = {'func' : bsr.RSVP, 'params' : (aDic[choice], treatment)}
         type = "_"+f['params'][1]
         print "task %s, %s"%(f['func'],type)
         J[i] = f['func'](*f['params'])
@@ -249,5 +254,5 @@ if __name__ == '__main__':
     #config = configureExperiment()
     
     #J = runExperiment()
-    J = runExperiment2(preliminaryTasks=False)
+    J = runExperiment2(preliminaryTasks=False,randomTreatment=False)
     
