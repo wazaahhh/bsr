@@ -86,7 +86,6 @@ def runExperiment():
     k=1
     os.system("tput civis")
     for i,f in enumerate(config):
-        continue
         os.system("clear && printf '\e[3J'")
         print "task %s/%s" %(i+1,len(config))
         MW.qualityCheckLoop()
