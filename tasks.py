@@ -83,10 +83,10 @@ def showArticleList(articles):
     random.shuffle(index)
     
     for i,ix in enumerate(index):
-        print "\n"
+        #print "\n"
         niceTextDisplay("%s. %s"%(i+1,description[ix]),lineSleep=0.1)
 
-    print "\n"
+    #print "\n"
     try:
         input= raw_input("Choose a text (1 to %s): "%len(index))
     except NameError:
@@ -292,6 +292,42 @@ def randomCommonNounFromList(max):
     np.random.shuffle(list)
     return list[:l]
 
+def printIntroInstructions():
+        print "\n"
+        niceTextDisplay('''The brain speed reader experiment is about to start. 
+                    Please make sure that you have paired the Neurosky Mindwave on your computer.''',lineSleep=0.2)
+        print "\n" 
+        niceTextDisplay('''If you have not yet connected Neurosky Mindwave, please follow the following steps:''',lineSleep=0.2)
+        niceTextDisplay('''1. Select the bluetooth menu (in Settings),''',lineSleep=0.2)
+        niceTextDisplay('''2. Select "Set up bluetooth device,''',lineSleep=0.2)
+        niceTextDisplay('''3. Press "on/pair" button on the Neurosky Mindwave headset,''',lineSleep=0.2)
+        niceTextDisplay('''4. When the Neurosky Mindwave appears on the bluetooth menu, 
+        select it, click "continue" and follow the next steps,''',lineSleep=0.2)
+        niceTextDisplay('''5. Place the headset on your head, with the sensors on your left forehead.''',lineSleep=0.2)
+        print "\n"
+        input= raw_input("(Press any key to continue)")
+
+
+def printRSVPinstructions(manualChoice=False):
+    niceTextDisplay('''You have successfully completed the preliminary tasks.''',lineSleep=0.2)
+    print "\n"
+    if manualChoice==False:
+        niceTextDisplay('''We turn now to the "brain speed reader" experiment. You will be presented a list
+        of texts to choose from, as well as a brain speed reader treatment.''',lineSleep=0.2)
+        print "\n"
+        niceTextDisplay('''After each text you will be asked to answer 5 short questions:''',lineSleep=0.2)
+    else:
+        niceTextDisplay('''Now we turn to the "brain speed reader" experiment. You will be presented some articles using Rapid Serial Visual Presentation (RSVP) at varying speed.''')
+        print "\n"
+        niceTextDisplay('''After each text you will be asked to answer 5 short questions:''',lineSleep=0.2)
+         
+    niceTextDisplay('''1: Summarize article you have just read.''',lineSleep=0.2)
+    niceTextDisplay('''2: Recall people, places, organizations and institutions mentioned in the article.''',lineSleep=0.2)
+    niceTextDisplay('''3: Identify common words that have appeared in the text.''',lineSleep=0.2)
+    niceTextDisplay('''4: Reading comfort on a scale from 0 to 10.''',lineSleep=0.2)
+    niceTextDisplay('''5: Attention level on a scale from 0 to 10.''',lineSleep=0.2)
+    print "\n"
+    input= raw_input("(Press any key to continue)")
 
 def question3(articleJson,max=6):
     textNouns = articleJson['nouns'].keys()
@@ -306,14 +342,15 @@ def generateQuestions(articleJson):
     return [{'question':'Please tell us briefly about the article you have just read (max. 100 words).', 'type':'free_response'},
     {'question':'Can you remember people, places, organizations and institutions mentioned in the article? (List one per line).', 'type':'free_recall'},
     {'question':'Which of these words appeared in the text?', 'type':'multiple_choice', 'choices':question3(articleJson,max=6)},
-    {'question':'How comfortable did you feel, when speed reading this text (scale 0 to 10)?', 'type':'multiple_choice_scale'}]
+    {'question':'How comfortable did you feel, when speed reading this text (on a scale from 0 to 10)?', 'type':'multiple_choice_scale'},
+    {'question':'What was your level of attention, when speed reading this text (on a scale from 0 to 10)?', 'type':'multiple_choice_scale'}
+    ]
 
  
 def showQuestionsTUI(articleJson):
     '''asks questions on the terminal user interface (TUI)'''
     
     questions = generateQuestions(articleJson)
-    
     for i,q in enumerate(questions):
         
         os.system("clear && printf '\e[3J'")
@@ -324,9 +361,11 @@ def showQuestionsTUI(articleJson):
             try:
                 niceTextDisplay('Please tell us briefly about the article you have just read (max. 100 words) :')
                 print "(Press Enter to go to next question.)"
+                os.system("tput cnorm")
                 r1start = time.time()
                 response1 = raw_input()
                 r1end = time.time()
+                os.system("tput civis")
                 print "\n\n"
             except NameError:
                 pass
@@ -335,9 +374,11 @@ def showQuestionsTUI(articleJson):
             try:
                 niceTextDisplay('Can you remember people, places, organizations and institutions mentioned in the article?')
                 print "(Enter names separated by commas and Press Enter to go to next question.)"
+                os.system("tput cnorm")
                 r2start = time.time()
                 response2 = raw_input()
                 r2end = time.time()
+                os.system("tput civis")
                 print "\n\n"
                 
             except NameError:
@@ -350,9 +391,11 @@ def showQuestionsTUI(articleJson):
                 for i,c in enumerate(q['choices']):
                     print "%s. %s"%(i+1,c)
                 print "\n"
+                os.system("tput cnorm")
                 r3start = time.time()
-                response3 = raw_input()
+                response3 = {'input': q['choices'],"choices" : raw_input().split(",")}
                 r3end = time.time()
+                os.system("tput civis")
                 print "\n\n"
             except NameError:
                 pass
@@ -361,51 +404,56 @@ def showQuestionsTUI(articleJson):
             try:
                 print "%s. Press Enter to go to next task." % q['question']
                 #print '(Enter comma separated numbers corresponding to words found in the text. Press Enter to finish.)' 
+                os.system("tput cnorm")
                 r4start = time.time()
                 response4 = raw_input()
                 r4end = time.time()
+                os.system("tput civis")
                 print "\n\n"
                 print "\n\n"
             except NameError:
                 pass
-        
-        
+    
     return {'r1' : {'t0': r1start, 't1' : r1end, 'response' : response1}, 
             'r2' : {'t0': r2start, 't1' : r2end, 'response' : response2.split(",")},
-            'r3' : {'t0': r3start, 't1' : r3end, 'response' : response3.split(",")},
-            'r3' : {'t0': r4start, 't1' : r4end, 'response' : response4}}
+            'r3' : {'t0': r3start, 't1' : r3end, 'response' : response3},
+            'r4' : {'t0': r4start, 't1' : r4end, 'response' : response4}
+            }
     
    
    
-def generateFinalQuestions():   
-    questions = [{"question" : "What is your gender?", "choices": ["Female","Male"],'type':'multiple_choice'},
+def generateFinalQuestions(texts):   
+    questions = [{"question" : "Please rank the articles you just read, by level of comfort:","choices" : [aDic[t]['title'] for t in texts],'type':'ordered_choice'},
+                 {"question" : "Please rank the articles by level of attention.","choices" : [aDic[t]['title'] for t in texts],'type':'ordered_choice'},
+                 {"question" : "What is your gender?", "choices": ["Female","Male"],'type':'unique_choice'},
                  {"question" : "How old are you (years since birth)?", 'type':'free_response'},
-                 {"question" : "Is English a native language for you?", "choices": ["Yes","No"],'type':'multiple_choice'},
-                 {"question" : "What is the highest academic degree you have achieved?", "choices": ["High School","Bachelor","Master","PhD"],'type':'multiple_choice'},
-                 {"question" : "Are you left-handed?", "choices": ["Right-handed","Left-handed","Ambidexterous"],'type':'multiple_choice'},
-                 {"question" : "Do you suffer any reading-related disabilities (e.g. dyslexia)?", "choices": ["Yes","No","Don't know"],'type':'multiple_choice'},
-                 {"question" : "Do you suffer any form attention disorder (e.g., ADD, ADHD)?", "choices": ["Yes","No","Don't know"],'type':'multiple_choice'},
-                 {"question" : "Do you take any psychotropic drugs (e.g. anti-depressants, psycho-stimulants, sleeping pills)?", "choices": ["Yes","No","Maybe"],'type':'multiple_choice'},
-                 {"question" : "Have you ever practiced any speed-reading or mental calculation techniques?", "choices": ["Yes","No","Don't remember"],'type':'multiple_choice'}
+                 {"question" : "Is English a native language for you?", "choices": ["Yes","No"],'type':'unique_choice'},
+                 {"question" : "What is the highest academic degree you have achieved?", "choices": ["High School","Bachelor","Master","PhD"],'type':'unique_choice'},
+                 {"question" : "Are you left-handed?", "choices": ["Right-handed","Left-handed","Ambidexterous"],'type':'unique_choice'},
+                 {"question" : "Do you suffer any reading-related disabilities (e.g. dyslexia)?", "choices": ["Yes","No","I don't know"],'type':'unique_choice'},
+                 {"question" : "Do you suffer any form attention disorder (e.g., ADD, ADHD)?", "choices": ["Yes","No","I don't know"],'type':'unique_choice'},
+                 {"question" : "Do you take any psychotropic drugs (e.g. anti-depressants, psycho-stimulants, sleeping pills)?", "choices": ["Yes","No","Maybe"],'type':'unique_choice'},
+                 {"question" : "Have you ever practiced any speed-reading or mental calculation techniques?", "choices": ["Yes","No","I don't remember"],'type':'unique_choice'}
                  ]
 
     return questions
 
 
 def multipleChoiceQuestion(listChoices):
+    os.system("tput cnorm")
     for i,c in enumerate(listChoices):
         print "%s. %s"%(i+1,c)
         
     l = len(listChoices)
+    
     r = raw_input("(Enter any value between 1 and %s) : "%l)
     while int(r) not in range(1,l+1):
         r = raw_input("incorrect choice, please select a value between 1 and %s) : "%l)
     return listChoices[int(r)-1]
     
 
-def showFinalQuestionsTUI():
-    
-    questions = generateFinalQuestions()
+def showFinalQuestionsTUI(texts):
+    questions = generateFinalQuestions(texts)
     
     instruction = "To finish, we wish to ask %s quick questions." %(len(questions))
     #print taskname
@@ -416,12 +464,10 @@ def showFinalQuestionsTUI():
     except NameError:
         pass
 
-    
-    
     responses = {}
-    
-    
-    
+        
+    MW.dumpBuffer()
+    os.system("tput cnorm")
     for i,q in enumerate(questions):
         os.system("clear && printf '\e[3J'")
         print "Question %s/%s" %(i+1,len(questions)) 
@@ -441,7 +487,7 @@ def showFinalQuestionsTUI():
                 pass
 
 
-        if q['type'] == 'multiple_choice':
+        if q['type'] == 'unique_choice':
             try:
                 niceTextDisplay(q['question'])
                 #print 'Enter a unique value (1 to %s) corresponding to your choice .'%len(q['choices']) 
@@ -458,8 +504,30 @@ def showFinalQuestionsTUI():
             except NameError:
                 pass
 
-        responses[i+1] = {'t0': rStart, 't1' : rEnd, 'response' : r}
 
+        if q['type'] == 'ordered_choice':
+            try:
+                niceTextDisplay(q['question'])
+                for i,c in enumerate(q['choices']):
+                    print "%s. %s"%(i+1,c)
+                print "\n"
+                rStart = time.time()
+                r = raw_input("Enter comma separated numbers corresponding to articles (most comfortable / higher attention first): ")
+                r = {'input': q['choices'],"choices" : r.split(",")}
+                
+                while sum(map(int,r['choices']))!=sum(range(1,i+2)):
+                    print "Incorrect entry :-( Please try again: "
+                    r = raw_input("Enter comma separated numbers corresponding to articles (most comfortable / higher attention first): ")
+                    r = {'input': q['choices'],"choices" : r.split(",")}
+                rEnd = time.time()
+                print "\n\n"
+            except NameError:
+                pass
+
+        responses[i+1] = {'t0': rStart, 't1' : rEnd, 'response' : r}
+    
+    eegData = MW.dumpBuffer()
+    responses['eegData'] = eegData
     return responses
 
 
@@ -478,11 +546,11 @@ class bsr():
         self.time = [0]
         
         '''BSR parameters'''
-        self.entropy_window = 256
+        self.entropy_window = 512
         self.deque = 10
-        self.adaptivity = -0.01
+        self.adaptivity = -0.005
         self.currentEntropy = 0
-        self.entropy = [0] #list(np.random.rand(30)/100.)
+        self.entropy = [0]
         self.normalized_entropy = [0]
 
         '''AR parameters'''
@@ -504,7 +572,8 @@ class bsr():
         
         try:
             if np.median(rawEEG) > 150:
-                self.entropy.append(self.entropy[-1])
+                ''' If raw data exhibits large deviation, take the median of the entropy on the last 10 measures'''
+                self.entropy.append(np.median(self.entropy[-10:]))
             else:
                 #print rawEEG
                 #print compute_entropy(rawEEG,1)
@@ -526,30 +595,41 @@ class bsr():
         elif treatment=="bsrMinus":
             try:
                 self.getCurrentEntropy()
-                self.currentRate =self.currentRate*(1 - (self.adaptivity*self.currentEntropy))
+                self.currentRate = self.currentRate*(1 - (self.adaptivity*self.currentEntropy))
             except:
                 pass
             
         elif treatment=="ar1":
+            self.getCurrentEntropy()
             self.currentRate = self.AR1()
         
         elif treatment=="cst":
+            self.getCurrentEntropy()
             self.currentRate = self.currentRate
         
         if self.currentRate > 175:
-            '''introduce a lower broundary'''
+            '''introduce a lower speed broundary'''
             self.currentRate == 175
+            
+        if self.currentRate < 30:
+            '''introduce a higher speed broundary'''
+            self.currentRate == 30
+            
+        
         
     def RSVP(self,articleJson,treatment):
         
         taskname = "rsvp"
-        instruction = ''' You will see words displayed one at the time \n at some varying speed. As much as you can,\n try to get the general meaning of the text\n and try to memorize important key words,\n as well as important people, places,\n organizations and institutions.'''
+        instruction = '''You will see words displayed one at the time at some varying speed. 
+        As much as you can, try to get the general meaning of the text and try to memorize 
+        important key words, as well as important people, places, organizations and institutions.'''
 
         MW.dumpBuffer()
         time.sleep(3)
     
         #print taskname
-        print instruction
+        print "\n"
+        print niceTextDisplay(instruction,lineSleep=0.2)
         print "\n"
         try:
             input= raw_input("(Press any key to continue)")
@@ -562,8 +642,8 @@ class bsr():
         self.normalized_entropy = [0]
         self.rate = [self.initRate]
         self.words = ['x']
-        self.time = [0]
-
+        self.time = [time.time()]
+        self.t0 = self.time[0]
         
         txt = articleJson['content']
         wordListRead = txt.split()
@@ -592,9 +672,8 @@ class bsr():
                 time.sleep(self.currentRate)
         
         #print self.time
-        t0 = self.time[1]
-        t = [ item - t0 for item in self.time]
-        t = t[1:]
+        t = [ item - self.t0 for item in self.time]
+        t = t[:]
         
         time.sleep(1)
         os.system("tput cnorm")
@@ -603,7 +682,21 @@ class bsr():
         
         eegData = MW.getRawEEG()
         
-        expDic  = {'exp': {'rate': self.rate,'entropy' : self.entropy,'normalized_entropy' : self.normalized_entropy,'words' : self.words, 'timestamps' : t,'t0':t0},'eegData':eegData, "responses" : responses }
+        expDic  = {'eegData':eegData, 
+                   "responses" : responses,
+                   'exp': {'rate': self.rate,
+                           'entropy' : self.entropy,
+                           'normalized_entropy' : self.normalized_entropy,
+                           'words' : self.words, 
+                           'timestamps' : t,
+                           't0': self.t0, 
+                           'adaptivity' : self.adaptivity,
+                           'entropy_window' : self.entropy_window,
+                           'deque' : self.deque
+                           }
+                   }
+               
+        
         return expDic
     
         '''
@@ -684,6 +777,8 @@ def runTest():
     
 if __name__ == '__main__':
     print "blah"
+    
+
     #J = runTest()
     
 

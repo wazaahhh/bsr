@@ -101,7 +101,7 @@ class readMindwave():
             
             sigqual = self.qualityCheck(duration = 2)
     
-        print "(signal quality : good)"
+        print "signal quality : good"
     
     
     def runTest(self,duration):

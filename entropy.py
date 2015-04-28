@@ -32,6 +32,7 @@ def compute_entropy(raw_data,q=1):
     return s
 
 def normalize(vector):
-    vNorm = (vector - np.mean(vector))/np.std(vector)
+    #vNorm = (vector - np.mean(vector))/np.std(vector)
+    vNorm = (vector - np.median(vector))/np.std(vector)
     #vNorm = (vector)/np.std(vector)
     return vNorm
