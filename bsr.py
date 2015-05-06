@@ -32,17 +32,18 @@ def uplodJson(Json,token,task,compress=False):
     r = requests.put('http://brainspeedr.s3.amazonaws.com/bsr/v%s/%s/%s.%s?x-amz-acl=bucket-owner-full-control'%(experiment_version,token,task,extension), data=Json)
 
 
-def configureExperiment():
+def configureExperiment(lenExp):
     '''add preliminary tasks'''
     prelimTasks = [{'func' : blink5times, 'params' : ()},{'func' : restingStateOpenEyes, 'params' : ()}, {'func' : restingStateClosedEyes, 'params' : ()}, {'func' : doMath , 'params' : ()}, {'func' :readTextEnglish , 'params' : ()}]
     #random.shuffle(prelimTasks)
     experimentConfig = prelimTasks
-    experimentConfig = []
+    #experimentConfig = []
 
     '''add treatment tasks'''
-    treatments = ['cst','bsrPlus','bsrMinus','cst','bsrPlus','bsrMinus']
+    treatments = ['bsrPlus','bsrMinus','cst','bsrPlus','bsrMinus']
     #treatments = ['bsrMinus']
     random.shuffle(treatments)
+    treatments = ['cst'] + treatments[:lenExp-1]
     
     '''pre-select articles'''
    
@@ -51,22 +52,22 @@ def configureExperiment():
     random.shuffle(articles)
     articles = articles[:len(treatments)]
 
+    saveConfig = {"treatments" : treatments ,"articles" : articles}
     
     for i in range(len(treatments)):
         experimentConfig.append({'func' : bsr.RSVP, 'params' : (aDic[articles[i]], treatments[i])})
     
-    return experimentConfig,articles
+    return experimentConfig,articles,saveConfig
 
 
-def runExperiment():
-    
+def runExperiment(lenExp=3):
     token = str(uuid.uuid4())[-5:]
-    #Jfinal = {}
     
     os.system("clear && printf '\e[3J'")
     printIntroInstructions()
     os.system("clear && printf '\e[3J'")
     
+    print "Your experiment token is: %s"%token
     print "Checking connection and signal quality. Please wait..."
     
     start = time.time()
@@ -81,7 +82,8 @@ def runExperiment():
     time.sleep(2)
     MW.qualityCheckLoop()
 
-    config,texts = configureExperiment()
+    config,texts,saveConfig = configureExperiment(lenExp)
+    uplodJson(saveConfig,token,"config",compress=True)
 
     k=1
     os.system("tput civis")
@@ -102,13 +104,12 @@ def runExperiment():
             
         #print "task %s, %s, %s"%(i,f['func'],type)
         J = f['func'](*f['params'])
-        try:
-            type = "_"+f['params'][1]
+        
+        if J.has_key('reponses'):
             J['meta'] = {'articleKey' : texts[i], 'uploadTime' : datetime.utcnow().strftime("%Y_%m_%d/%H%M%S"),'mac_address' : get_mac()}
-        except:
-            pass
         
         #Jfinal[i] = J
+
 
         '''upload json'''
         #print "please wait while data are uploaded"
@@ -143,7 +144,7 @@ def runExperiment2(preliminaryTasks=True,randomTreatment=True, finalQuestions=Tr
                 (iii) select 'press on/pair button on the headset),
                 (iv) when the mindwave appears, click "add" and finish.
                 (v) Place the headset on your head, with the sensors on your left forehead.''')
-    input= raw_input("(Press any key to continue)")
+    input= raw_input("(Press Enter to continue)")
 
     
     start = time.time()
@@ -195,7 +196,7 @@ def runExperiment2(preliminaryTasks=True,randomTreatment=True, finalQuestions=Tr
         
 
         
-        input= raw_input("(Press any key to continue)")
+        input= raw_input("(Press Enter to continue)")
         os.system("clear && printf '\e[3J'")
         
         choice = showArticleList(articles)
@@ -282,5 +283,5 @@ if __name__ == '__main__':
     global treatments
     treatments = ['cst','bsrPlus','bsrMinus']
     
-    J = runExperiment()
+    J = runExperiment(lenExp=3)
     

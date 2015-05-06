@@ -127,7 +127,7 @@ def blink5times():
     print instruction
     
     try:
-        input= raw_input("Press any key to continue")
+        input= raw_input("Press Enter to continue")
     except NameError:
         pass
     
@@ -162,7 +162,7 @@ def restingStateOpenEyes(duration=15):
     print instruction
      
     try:
-        input= raw_input("Press any key to continue")
+        input= raw_input("Press Enter to continue")
     except NameError:
         pass   
      
@@ -186,7 +186,7 @@ def restingStateClosedEyes(duration=15):
     print instruction
     
     try:
-        input= raw_input("(Press any key to continue)")
+        input= raw_input("(Press Enter to continue)")
     except NameError:
         pass   
     
@@ -209,7 +209,7 @@ def doMath(iterations= 10, operation_duration = 2.3):
     print instruction
     
     try:
-        input= raw_input("(Press any key to continue)")
+        input= raw_input("(Press Enter to continue)")
     except NameError:
         pass  
 
@@ -234,12 +234,12 @@ def readTextEnglish():
     readTextJson = json.loads(open("articles/ObamaCybersecurityShortened.json",'rb').read())    
     
     taskname = "Read Text"
-    instruction = "Read in silence the following short text."
+    instruction = "Read in silence and your own pace, the following short text."
     #print taskname
     print instruction  
 
     try:
-        input= raw_input("(Press any key to continue)")
+        input= raw_input("(Press Enter to continue)")
     except NameError:
         pass
 
@@ -255,7 +255,7 @@ def readTextEnglish():
     niceTextDisplay(text)
 
     try:
-        input= raw_input("(Press any key to continue)")
+        input= raw_input("(Press Enter to continue)")
     except NameError:
         pass
 
@@ -273,7 +273,7 @@ def readTextEnglish():
 #     print instruction
 # 
 #     try:
-#         input= raw_input("Press any key to continue")
+#         input= raw_input("Press Enter to continue")
 #     except NameError:
 #         pass
 # 
@@ -292,42 +292,43 @@ def randomCommonNounFromList(max):
     np.random.shuffle(list)
     return list[:l]
 
-def printIntroInstructions():
+def printIntroInstructions(lineSleep=0.1):
         print "\n"
         niceTextDisplay('''The brain speed reader experiment is about to start. 
-                    Please make sure that you have paired the Neurosky Mindwave on your computer.''',lineSleep=0.2)
+                    Please make sure that you have paired the Neurosky Mindwave on your computer.''',lineSleep=lineSleep)
         print "\n" 
-        niceTextDisplay('''If you have not yet connected Neurosky Mindwave, please follow the following steps:''',lineSleep=0.2)
-        niceTextDisplay('''1. Select the bluetooth menu (in Settings),''',lineSleep=0.2)
-        niceTextDisplay('''2. Select "Set up bluetooth device,''',lineSleep=0.2)
-        niceTextDisplay('''3. Press "on/pair" button on the Neurosky Mindwave headset,''',lineSleep=0.2)
+        niceTextDisplay('''If you have not yet connected Neurosky Mindwave, please follow the following steps:''',lineSleep=lineSleep)
+        niceTextDisplay('''1. Select the bluetooth menu (in Settings),''',lineSleep=lineSleep)
+        niceTextDisplay('''2. Select "Set up bluetooth device,''',lineSleep=lineSleep)
+        niceTextDisplay('''3. Press "on/pair" button on the Neurosky Mindwave headset,''',lineSleep=lineSleep)
         niceTextDisplay('''4. When the Neurosky Mindwave appears on the bluetooth menu, 
-        select it, click "continue" and follow the next steps,''',lineSleep=0.2)
-        niceTextDisplay('''5. Place the headset on your head, with the sensors on your left forehead.''',lineSleep=0.2)
+        select it, click "continue" and follow the next steps,''',lineSleep=lineSleep)
+        niceTextDisplay('''5. Place the headset on your head, with the sensors on your left forehead.''',lineSleep=lineSleep)
         print "\n"
-        input= raw_input("(Press any key to continue)")
+        input= raw_input("(Press Enter to continue)")
 
 
-def printRSVPinstructions(manualChoice=False):
-    niceTextDisplay('''You have successfully completed the preliminary tasks.''',lineSleep=0.2)
+def printRSVPinstructions(manualChoice=False,lineSleep=0.1):
+    niceTextDisplay('''You have successfully completed the preliminary tasks.''',lineSleep=lineSleep)
     print "\n"
     if manualChoice==False:
         niceTextDisplay('''We turn now to the "brain speed reader" experiment. You will be presented a list
-        of texts to choose from, as well as a brain speed reader treatment.''',lineSleep=0.2)
+        of texts to choose from, as well as a brain speed reader treatment.''',lineSleep=lineSleep)
+        niceTextDisplay('''During the experiment, try to modulate your concentration in order to control of word display speed, but don't worry if you don't feel any effect.''',lineSleep=lineSleep)
         print "\n"
-        niceTextDisplay('''After each text you will be asked to answer 5 short questions:''',lineSleep=0.2)
+        niceTextDisplay('''After each text you will be asked to answer 5 short questions:''',lineSleep=lineSleep)
     else:
-        niceTextDisplay('''Now we turn to the "brain speed reader" experiment. You will be presented some articles using Rapid Serial Visual Presentation (RSVP) at varying speed.''')
+        niceTextDisplay('''Now we turn to the "brain speed reader" experiment. You will be presented some articles using Rapid Serial Visual Presentation (RSVP) at varying speed. During the experiment, you can try to modulate your concentration to control of word display speed''')
         print "\n"
-        niceTextDisplay('''After each text you will be asked to answer 5 short questions:''',lineSleep=0.2)
+        niceTextDisplay('''After each text you will be asked to answer 5 short questions:''',lineSleep=lineSleep)
          
-    niceTextDisplay('''1: Summarize article you have just read.''',lineSleep=0.2)
-    niceTextDisplay('''2: Recall people, places, organizations and institutions mentioned in the article.''',lineSleep=0.2)
-    niceTextDisplay('''3: Identify common words that have appeared in the text.''',lineSleep=0.2)
-    niceTextDisplay('''4: Reading comfort on a scale from 0 to 10.''',lineSleep=0.2)
-    niceTextDisplay('''5: Attention level on a scale from 0 to 10.''',lineSleep=0.2)
+    niceTextDisplay('''1: Summarize article you have just read.''',lineSleep=lineSleep)
+    niceTextDisplay('''2: Recall people, places, organizations and institutions mentioned in the article.''',lineSleep=lineSleep)
+    niceTextDisplay('''3: Identify common words that have appeared in the text.''',lineSleep=lineSleep)
+    niceTextDisplay('''4: Reading comfort on a scale from 0 to 10.''',lineSleep=lineSleep)
+    niceTextDisplay('''5: Level of concentration achieved on a scale from 0 to 10.''',lineSleep=lineSleep)
     print "\n"
-    input= raw_input("(Press any key to continue)")
+    input= raw_input("(Press Enter to continue)")
 
 def question3(articleJson,max=6):
     textNouns = articleJson['nouns'].keys()
@@ -343,7 +344,7 @@ def generateQuestions(articleJson):
     {'question':'Can you remember people, places, organizations and institutions mentioned in the article? (List one per line).', 'type':'free_recall'},
     {'question':'Which of these words appeared in the text?', 'type':'multiple_choice', 'choices':question3(articleJson,max=6)},
     {'question':'How comfortable did you feel, when speed reading this text (on a scale from 0 to 10)?', 'type':'multiple_choice_scale'},
-    {'question':'What was your level of attention, when speed reading this text (on a scale from 0 to 10)?', 'type':'multiple_choice_scale'}
+    {'question':'How much did you have to concentrate, when speed reading this text (on a scale from 0 to 10)?', 'type':'multiple_choice_scale'}
     ]
 
  
@@ -423,8 +424,8 @@ def showQuestionsTUI(articleJson):
    
    
 def generateFinalQuestions(texts):   
-    questions = [{"question" : "Please rank the articles you just read, by level of comfort:","choices" : [aDic[t]['title'] for t in texts],'type':'ordered_choice'},
-                 {"question" : "Please rank the articles by level of attention.","choices" : [aDic[t]['title'] for t in texts],'type':'ordered_choice'},
+    questions = [{"question" : "Please rank the articles you just read, by level of reading comfort:","choices" : [aDic[t]['title'] for t in texts],'type':'ordered_choice'},
+                 {"question" : "Please rank the articles by level of concentration.","choices" : [aDic[t]['title'] for t in texts],'type':'ordered_choice'},
                  {"question" : "What is your gender?", "choices": ["Female","Male"],'type':'unique_choice'},
                  {"question" : "How old are you (years since birth)?", 'type':'free_response'},
                  {"question" : "Is English a native language for you?", "choices": ["Yes","No"],'type':'unique_choice'},
@@ -460,7 +461,7 @@ def showFinalQuestionsTUI(texts):
     print instruction
 
     try:
-        input= raw_input("(Press any key to continue)")
+        input= raw_input("(Press Enter to continue)")
     except NameError:
         pass
 
@@ -609,11 +610,11 @@ class bsr():
         
         if self.currentRate > 175:
             '''introduce a lower speed broundary'''
-            self.currentRate == 175
+            self.currentRate = 175
             
         if self.currentRate < 30:
             '''introduce a higher speed broundary'''
-            self.currentRate == 30
+            self.currentRate = 30
             
         
         
@@ -632,7 +633,7 @@ class bsr():
         print niceTextDisplay(instruction,lineSleep=0.2)
         print "\n"
         try:
-            input= raw_input("(Press any key to continue)")
+            input= raw_input("(Press Enter to continue)")
         except NameError:
             pass
 

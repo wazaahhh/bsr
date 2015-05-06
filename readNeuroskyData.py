@@ -92,10 +92,10 @@ class readMindwave():
         sigqual = self.qualityCheck(duration = 2)
         while sigqual > 5:
             ''' check signal quality'''
-            print "poor signal quality (%.2f), please replace headset."%sigqual
+            print "poor signal quality (%.2f), please adjust Neurosky Mindwave."%sigqual
         
             try:
-                input= raw_input("Press any key to continue")
+                input= raw_input("Press Enter to continue")
             except NameError:
                 pass
             
