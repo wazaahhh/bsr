@@ -340,12 +340,13 @@ def question3(articleJson,max=6):
 
 
 def generateQuestions(articleJson):
-    return [{'question':'Please tell us briefly about the article you have just read (max. 100 words).', 'type':'free_response'},
-    {'question':'Can you remember people, places, organizations and institutions mentioned in the article? (List one per line).', 'type':'free_recall'},
-    {'question':'Which of these words appeared in the text?', 'type':'multiple_choice', 'choices':question3(articleJson,max=6)},
-    {'question':'How comfortable did you feel, when speed reading this text (on a scale from 0 to 10)?', 'type':'multiple_choice_scale'},
-    {'question':'How much did you have to concentrate, when speed reading this text (on a scale from 0 to 10)?', 'type':'multiple_choice_scale'}
-    ]
+    return [{'question':'How familiar are you with the topic of this article (on a scale from 0 to 10)?', 'type':'multiple_choice_scale'},
+            {'question':'Please tell us briefly about the article you have just read (max. 100 words).', 'type':'free_response'},
+            {'question':'Can you remember people, places, organizations and institutions mentioned in the article? (List one per line).', 'type':'free_recall'},
+            {'question':'Which of these words appeared in the text?', 'type':'multiple_choice', 'choices':question3(articleJson,max=6)},
+            {'question':'How comfortable did you feel, when speed reading this text (on a scale from 0 to 10)?', 'type':'multiple_choice_scale'},
+            {'question':'How much did you have to concentrate, when speed reading this text (on a scale from 0 to 10)?', 'type':'multiple_choice_scale'}
+            ]
 
  
 def showQuestionsTUI(articleJson):
@@ -425,7 +426,7 @@ def showQuestionsTUI(articleJson):
    
 def generateFinalQuestions(texts):   
     questions = [{"question" : "Please rank the articles you just read, by level of reading comfort:","choices" : [aDic[t]['title'] for t in texts],'type':'ordered_choice'},
-                 {"question" : "Please rank the articles by level of concentration.","choices" : [aDic[t]['title'] for t in texts],'type':'ordered_choice'},
+                 {"question" : "Please rank the articles by your level of concentration when reading.","choices" : [aDic[t]['title'] for t in texts],'type':'ordered_choice'},
                  {"question" : "What is your gender?", "choices": ["Female","Male"],'type':'unique_choice'},
                  {"question" : "How old are you (years since birth)?", 'type':'free_response'},
                  {"question" : "Is English a native language for you?", "choices": ["Yes","No"],'type':'unique_choice'},
@@ -469,63 +470,68 @@ def showFinalQuestionsTUI(texts):
         
     MW.dumpBuffer()
     os.system("tput cnorm")
-    for i,q in enumerate(questions):
+    for q,qx in enumerate(questions):
         os.system("clear && printf '\e[3J'")
-        print "Question %s/%s" %(i+1,len(questions)) 
+        print "Question %s/%s" %(q+1,len(questions)) 
         
-        
-        
-        
-        if q['type'] == 'free_response':
-            try:
-                niceTextDisplay(q['question'])
-                #print "(Press Enter to go to next question.)"
-                rStart = time.time()
-                r = raw_input()
-                rEnd = time.time()
-                print "\n\n"
-            except NameError:
-                pass
+#         if q['type'] == 'free_response':
+#             try:
+#                 niceTextDisplay(q['question'])
+#                 #print "(Press Enter to go to next question.)"
+#                 rStart = time.time()
+#                 r = raw_input()
+#                 rEnd = time.time()
+#                 print "\n\n"
+#             except NameError:
+#                 pass
 
 
-        if q['type'] == 'unique_choice':
-            try:
-                niceTextDisplay(q['question'])
-                #print 'Enter a unique value (1 to %s) corresponding to your choice .'%len(q['choices']) 
-                for i,c in enumerate(q['choices']):
-                    print "%s. %s"%(i+1,c)
-                #print "\n"
-                rStart = time.time()
-                r = raw_input("(Enter any value between 1 and %s) : "%len(q['choices']))
-                while int(r) not in range(1,len(q['choices'])+1):
-                    r = raw_input("incorrect choice, please select a value between 1 and %s) : "%len(q['choices']))
-                    
-                rEnd = time.time()
-                print "\n\n"
-            except NameError:
-                pass
-
-
-        if q['type'] == 'ordered_choice':
-            try:
-                niceTextDisplay(q['question'])
-                for i,c in enumerate(q['choices']):
-                    print "%s. %s"%(i+1,c)
-                print "\n"
-                rStart = time.time()
-                r = raw_input("Enter comma separated numbers corresponding to articles (most comfortable / higher attention first): ")
-                r = {'input': q['choices'],"choices" : r.split(",")}
+        if qx['type'] == 'unique_choice':
+            niceTextDisplay(qx['question'])
+            for i,c in enumerate(qx['choices']):
+                print "%s. %s"%(i+1,c)
+            print "\n"
+            
+            r = {'input': qx['choices'],'choices' : -1}
+            rStart = time.time()
+            
+            while not int(r['choices']) in range(1,len(qx['choices'])+1):
+                input = raw_input("(Enter any value between 1 and %s) : "%len(qx['choices']))
                 
-                while sum(map(int,r['choices']))!=sum(range(1,i+2)):
-                    print "Incorrect entry :-( Please try again: "
-                    r = raw_input("Enter comma separated numbers corresponding to articles (most comfortable / higher attention first): ")
-                    r = {'input': q['choices'],"choices" : r.split(",")}
-                rEnd = time.time()
-                print "\n\n"
-            except NameError:
-                pass
+                try:
+                    if int(input) in range(1,len(qx['choices'])+1):
+                        r['choices'] = input
+                    else:
+                        print "incorrect choice, please select a value between 1 and %s) : "%len(qx['choices'])
+                except:
+                    print "incorrect choice, please select a value between 1 and %s) : "%len(qx['choices'])
+                    
+            rEnd = time.time()
+        print "\n\n"
+            
 
-        responses[i+1] = {'t0': rStart, 't1' : rEnd, 'response' : r}
+        if qx['type'] == 'ordered_choice':
+            niceTextDisplay(qx['question'])
+            for i,c in enumerate(qx['choices']):
+                print "%s. %s"%(i+1,c)
+            print "\n"
+            
+            r = {'input': qx['choices'],"choices" : []}
+            rStart = time.time()
+            
+            while not sum(map(int,r['choices'])) == np.sum(range(1,i+2)):
+                input = raw_input("Enter comma separated numbers corresponding to articles (most comfortable / higher attention first): ")
+                input = input.split(",")
+                try:
+                    if sum(map(int,input)) == np.sum(range(1,i+2)):
+                        r['choices'] = input
+                except:
+                    print "Incorrect entry :-( Please try again: "
+                    
+            rEnd = time.time()
+            
+        print "\n\n"    
+        responses[q+1] = {'t0': rStart, 't1' : rEnd, 'response' : r,'question': qx}
     
     eegData = MW.dumpBuffer()
     responses['eegData'] = eegData
@@ -608,13 +614,13 @@ class bsr():
             self.getCurrentEntropy()
             self.currentRate = self.currentRate
         
-        if self.currentRate > 175:
+        if self.currentRate > 0.175:
             '''introduce a lower speed broundary'''
-            self.currentRate = 175
+            self.currentRate = 0.175
             
-        if self.currentRate < 30:
+        if self.currentRate < .030:
             '''introduce a higher speed broundary'''
-            self.currentRate = 30
+            self.currentRate = .030
             
         
         

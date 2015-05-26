@@ -1,6 +1,6 @@
 
-bsr/*
-articles/*
+experiment/bsr/*
+experiment/articles/*
 textPrepare.pyc
 
 *.pyc

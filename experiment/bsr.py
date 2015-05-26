@@ -160,6 +160,7 @@ def runExperiment2(preliminaryTasks=True,randomTreatment=True, finalQuestions=Tr
     time.sleep(2)
     MW.qualityCheckLoop()
     
+    print token
     os.system("tput civis")
     
     if preliminaryTasks:
@@ -283,5 +284,6 @@ if __name__ == '__main__':
     global treatments
     treatments = ['cst','bsrPlus','bsrMinus']
     
-    J = runExperiment(lenExp=3)
+    #J = runExperiment(lenExp=3)
+    #runExperiment2(preliminaryTasks=False,randomTreatment=True, finalQuestions=True)
     
