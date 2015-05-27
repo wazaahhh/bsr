@@ -7,7 +7,9 @@ from entropy import compute_entropy,normalize
 import threading
 import re
 import requests
+import distance
 from getTerminalSize import getTerminalSize
+
 
 import logging
 logging.getLogger("requests").setLevel(logging.WARNING)
@@ -334,95 +336,125 @@ def question3(articleJson,max=6):
     textNouns = articleJson['nouns'].keys()
     np.random.shuffle(textNouns)    
     commonNouns = randomCommonNounFromList(max-1)
-    wordlist = np.unique(commonNouns + textNouns[:max-len(commonNouns)])
+    textNouns = textNouns[:max-len(commonNouns)]
+    wordlist = np.unique(commonNouns + textNouns)
     np.random.shuffle(wordlist)
-    return list(wordlist)
+    return {'wordlist':wordlist,'textNouns': textNouns}
 
 
 def generateQuestions(articleJson):
-    return [{'question':'How familiar are you with the topic of this article (on a scale from 0 to 10)?', 'type':'multiple_choice_scale'},
-            {'question':'Please tell us briefly about the article you have just read (max. 100 words).', 'type':'free_response'},
-            {'question':'Can you remember people, places, organizations and institutions mentioned in the article? (List one per line).', 'type':'free_recall'},
-            {'question':'Which of these words appeared in the text?', 'type':'multiple_choice', 'choices':question3(articleJson,max=6)},
-            {'question':'How comfortable did you feel, when speed reading this text (on a scale from 0 to 10)?', 'type':'multiple_choice_scale'},
-            {'question':'How much did you have to concentrate, when speed reading this text (on a scale from 0 to 10)?', 'type':'multiple_choice_scale'}
+    
+    q3 = question3(articleJson,max=6)
+    
+    questions = [{'question':'How familiar are you with the topic of this article? (on a scale from 0 to 10; Press Enter to continue)', 'type':'multiple_choice_scale'},
+            {'question':'Please tell us briefly about the article you have just read. (max. 100 words; Press Enter to continue)', 'type':'free_response'},
+            {'question':'Can you remember people, places, organizations and institutions mentioned in the article? (Enter names separated by commas; Press Enter to continue)', 'type':'free_recall','rightAnswer' : articleJson['properNouns']},
+            {'question':'Which of these words appeared in the text? (Press Enter to continue)', 'type':'multiple_choice', 'choices':q3['wordlist'], 'rightAnswer' : q3['textNouns']},
+            {'question':'How comfortable did you feel, when speed reading this text? (on a scale from 0 to 10; Press Enter to continue)', 'type':'multiple_choice_scale'},
+            {'question':'How much did you have to concentrate, when speed reading this text? (on a scale from 0 to 10; Press Enter to continue)', 'type':'multiple_choice_scale'}
             ]
+    
+    return questions
+
+
 
  
 def showQuestionsTUI(articleJson):
     '''asks questions on the terminal user interface (TUI)'''
+    questions = generateQuestions(articleJson)    
+    responses = {}
     
-    questions = generateQuestions(articleJson)
-    for i,q in enumerate(questions):
+    for q,qx in enumerate(questions):
         
         os.system("clear && printf '\e[3J'")
-        print "Question %s/%s" %(i+1,len(questions)) 
+        print "Question %s/%s" %(q+1,len(questions)) 
         
         
-        if q['type'] == 'free_response':
+        if qx['type'] == 'free_response':
             try:
-                niceTextDisplay('Please tell us briefly about the article you have just read (max. 100 words) :')
-                print "(Press Enter to go to next question.)"
+                niceTextDisplay(qx['question'],lineSleep=0.2)
                 os.system("tput cnorm")
-                r1start = time.time()
-                response1 = raw_input()
-                r1end = time.time()
+                rStart = time.time()
+                response = raw_input()
+                rEnd = time.time()
                 os.system("tput civis")
                 print "\n\n"
             except NameError:
                 pass
 
-        if q['type'] == 'free_recall':
+        if qx['type'] == 'free_recall':
             try:
-                niceTextDisplay('Can you remember people, places, organizations and institutions mentioned in the article?')
-                print "(Enter names separated by commas and Press Enter to go to next question.)"
+                niceTextDisplay(qx['question'],lineSleep=0.2)
                 os.system("tput cnorm")
-                r2start = time.time()
-                response2 = raw_input()
-                r2end = time.time()
+                rStart = time.time()
+                response = raw_input().split()
+                rEnd = time.time()
                 os.system("tput civis")
                 print "\n\n"
                 
             except NameError:
                 pass
         
-        if q['type'] == 'multiple_choice':
+        if qx['type'] == 'multiple_choice':
             try:
-                print 'Which of these words appeared in the text?'
-                niceTextDisplay('(Enter comma separated numbers corresponding to words found in the text. Press Enter to go to next question.)')
-                for i,c in enumerate(q['choices']):
+                niceTextDisplay(qx['question'],lineSleep=0.2)
+                #print 'Which of these words appeared in the text?'
+                #niceTextDisplay('(Enter comma separated numbers corresponding to words found in the text. Press Enter to continue.)')
+                for i,c in enumerate(qx['choices']):
                     print "%s. %s"%(i+1,c)
                 print "\n"
                 os.system("tput cnorm")
-                r3start = time.time()
-                response3 = {'input': q['choices'],"choices" : raw_input().split(",")}
-                r3end = time.time()
+                rStart = time.time()
+                response = {'input': qx['choices'],"choices" : raw_input().split(",")}
+                rEnd = time.time()
+
+
                 os.system("tput civis")
                 print "\n\n"
             except NameError:
                 pass
         
-        if q['type'] == 'multiple_choice_scale':
+        if qx['type'] == 'multiple_choice_scale':
             try:
-                print "%s. Press Enter to go to next task." % q['question']
+                niceTextDisplay(qx['question'],lineSleep=0.2)
                 #print '(Enter comma separated numbers corresponding to words found in the text. Press Enter to finish.)' 
                 os.system("tput cnorm")
-                r4start = time.time()
-                response4 = raw_input()
-                r4end = time.time()
+                rStart = time.time()
+                response = raw_input()
+                rEnd = time.time()
+                
                 os.system("tput civis")
                 print "\n\n"
                 print "\n\n"
             except NameError:
                 pass
     
-    return {'r1' : {'t0': r1start, 't1' : r1end, 'response' : response1}, 
-            'r2' : {'t0': r2start, 't1' : r2end, 'response' : response2.split(",")},
-            'r3' : {'t0': r3start, 't1' : r3end, 'response' : response3},
-            'r4' : {'t0': r4start, 't1' : r4end, 'response' : response4}
-            }
+        responses[q+1] = {'t0': rStart, 't1' : rEnd, 'response' : response,'question' : qx}
     
-   
+    return responses
+    
+
+def resultsQtreatments(responseDic,qIndex=4):
+    
+    if qIndex==3:
+        
+
+        print "blah"
+    
+    if qIndex==4:
+        rightAnswer = responseDic[qIndex]['question']['rightAnswer']
+        #print responsesDic[qIndex]['response']['choices']
+        responseIndex = np.array(map(int,responseDic[qIndex]['response']['choices']))-1
+        responseWords = list(responseDic[qIndex]['response']['input'][responseIndex])
+        
+        rightAnswer.sort()
+        responseWords.sort()
+        
+        levDist = distance.levenshtein(rightAnswer,responseWords)
+        return {'rightAnswer' : rightAnswer, 'responseIndex': responseIndex, 'responseWords' : responseWords, 'LevScore' : levDist}
+
+
+  
    
 def generateFinalQuestions(texts):   
     questions = [{"question" : "Please rank the articles you just read, by level of reading comfort:","choices" : [aDic[t]['title'] for t in texts],'type':'ordered_choice'},

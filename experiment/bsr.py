@@ -42,8 +42,9 @@ def configureExperiment(lenExp):
     '''add treatment tasks'''
     treatments = ['bsrPlus','bsrMinus','cst','bsrPlus','bsrMinus']
     #treatments = ['bsrMinus']
+    treatments = treatments[:lenExp-1]
     random.shuffle(treatments)
-    treatments = ['cst'] + treatments[:lenExp-1]
+    treatments = ['cst'] + treatments
     
     '''pre-select articles'''
    
@@ -101,7 +102,7 @@ def runExperiment(lenExp=3):
                 k=0
         except:
             type = ""
-            
+        
         #print "task %s, %s, %s"%(i,f['func'],type)
         J = f['func'](*f['params'])
         
@@ -284,6 +285,6 @@ if __name__ == '__main__':
     global treatments
     treatments = ['cst','bsrPlus','bsrMinus']
     
-    #J = runExperiment(lenExp=3)
+    #J = runExperiment(lenExp=4)
     #runExperiment2(preliminaryTasks=False,randomTreatment=True, finalQuestions=True)
     
