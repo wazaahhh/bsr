@@ -9,7 +9,7 @@ import re
 import requests
 import distance
 from getTerminalSize import getTerminalSize
-
+import Levenshtein
 
 import logging
 logging.getLogger("requests").setLevel(logging.WARNING)
@@ -221,7 +221,7 @@ def doMath(iterations= 10, operation_duration = 2.3):
     for i in range(iterations):
         n1 = random.randint(1,15)
         n2 = random.randint(1,15)
-        mathOps[time.time()] = [n1,n2]        
+        mathOps[i] = {'time': time.time(), 'op':[n1,"x",n2]}        
         showWord("%s x %s"%(n1,n2))
         #print "\n" * 10
         #print "\t" *5, "%s x %s"%(n1,n2)
@@ -254,7 +254,7 @@ def readTextEnglish():
     #print "\n"
     text = re.sub("\|","",text)
     #for p in text.split("|"):
-    niceTextDisplay(text)
+    niceTextDisplay(text,lineSleep=0.5)
 
     try:
         input= raw_input("(Press Enter to continue)")
@@ -336,8 +336,8 @@ def question3(articleJson,max=6):
     textNouns = articleJson['nouns'].keys()
     np.random.shuffle(textNouns)    
     commonNouns = randomCommonNounFromList(max-1)
-    textNouns = textNouns[:max-len(commonNouns)]
-    wordlist = np.unique(commonNouns + textNouns)
+    textNouns = list(textNouns[:max-len(commonNouns)])
+    wordlist = list(np.unique(commonNouns + textNouns))
     np.random.shuffle(wordlist)
     return {'wordlist':wordlist,'textNouns': textNouns}
 
@@ -347,11 +347,11 @@ def generateQuestions(articleJson):
     q3 = question3(articleJson,max=6)
     
     questions = [{'question':'How familiar are you with the topic of this article? (on a scale from 0 to 10; Press Enter to continue)', 'type':'multiple_choice_scale'},
-            {'question':'Please tell us briefly about the article you have just read. (max. 100 words; Press Enter to continue)', 'type':'free_response'},
-            {'question':'Can you remember people, places, organizations and institutions mentioned in the article? (Enter names separated by commas; Press Enter to continue)', 'type':'free_recall','rightAnswer' : articleJson['properNouns']},
-            {'question':'Which of these words appeared in the text? (Press Enter to continue)', 'type':'multiple_choice', 'choices':q3['wordlist'], 'rightAnswer' : q3['textNouns']},
-            {'question':'How comfortable did you feel, when speed reading this text? (on a scale from 0 to 10; Press Enter to continue)', 'type':'multiple_choice_scale'},
-            {'question':'How much did you have to concentrate, when speed reading this text? (on a scale from 0 to 10; Press Enter to continue)', 'type':'multiple_choice_scale'}
+                 {'question':'Please tell us briefly about the article you have just read. (max. 100 words; Press Enter to continue)', 'type':'free_response'},
+                 {'question':'Can you remember people, places, organizations and institutions mentioned in the article? (Enter names separated by commas; Press Enter to continue)', 'type':'free_recall','rightAnswer' : articleJson['properNouns']},
+                 {'question':'Which of these words appeared in the text? (Enter text numbers separated by commas; Press Enter to continue)', 'type':'multiple_choice', 'choices': q3['wordlist'], 'rightAnswer' : q3['textNouns']},
+                 {'question':'How comfortable did you feel, when speed reading this text? (on a scale from 0 to 10; Press Enter to continue)', 'type':'multiple_choice_scale'},
+                 {'question':'How much did you have to concentrate, when speed reading this text? (on a scale from 0 to 10; Press Enter to continue)', 'type':'multiple_choice_scale'}
             ]
     
     return questions
@@ -369,13 +369,14 @@ def showQuestionsTUI(articleJson):
         os.system("clear && printf '\e[3J'")
         print "Question %s/%s" %(q+1,len(questions)) 
         
+        response['q'] = qx['question']
         
         if qx['type'] == 'free_response':
             try:
                 niceTextDisplay(qx['question'],lineSleep=0.2)
                 os.system("tput cnorm")
                 rStart = time.time()
-                response = raw_input()
+                response['response'] = raw_input()
                 rEnd = time.time()
                 os.system("tput civis")
                 print "\n\n"
@@ -387,7 +388,7 @@ def showQuestionsTUI(articleJson):
                 niceTextDisplay(qx['question'],lineSleep=0.2)
                 os.system("tput cnorm")
                 rStart = time.time()
-                response = raw_input().split()
+                response['response'] = re.findall(r"[\w']+", raw_input()) # make list from string by removing spaces and punctuation
                 rEnd = time.time()
                 os.system("tput civis")
                 print "\n\n"
@@ -405,7 +406,8 @@ def showQuestionsTUI(articleJson):
                 print "\n"
                 os.system("tput cnorm")
                 rStart = time.time()
-                response = {'input': qx['choices'],"choices" : raw_input().split(",")}
+                response['input'] = qx['choices']
+                response["choices"] = raw_input().split(",")
                 rEnd = time.time()
 
 
@@ -417,10 +419,9 @@ def showQuestionsTUI(articleJson):
         if qx['type'] == 'multiple_choice_scale':
             try:
                 niceTextDisplay(qx['question'],lineSleep=0.2)
-                #print '(Enter comma separated numbers corresponding to words found in the text. Press Enter to finish.)' 
                 os.system("tput cnorm")
                 rStart = time.time()
-                response = raw_input()
+                response['response'] = raw_input()
                 rEnd = time.time()
                 
                 os.system("tput civis")
@@ -429,39 +430,38 @@ def showQuestionsTUI(articleJson):
             except NameError:
                 pass
     
-        responses[q+1] = {'t0': rStart, 't1' : rEnd, 'response' : response,'question' : qx}
+        responses["r" + str(q+1)] = {'t0': rStart, 't1' : rEnd, 'response' : response,'question' : qx}
     
     return responses
     
 
-def resultsQtreatments(responseDic,qIndex=4):
-    
-    if qIndex==3:
-        
-
-        print "blah"
-    
-    if qIndex==4:
-        rightAnswer = responseDic[qIndex]['question']['rightAnswer']
-        #print responsesDic[qIndex]['response']['choices']
-        responseIndex = np.array(map(int,responseDic[qIndex]['response']['choices']))-1
-        responseWords = list(responseDic[qIndex]['response']['input'][responseIndex])
-        
-        rightAnswer.sort()
-        responseWords.sort()
-        
-        levDist = distance.levenshtein(rightAnswer,responseWords)
-        return {'rightAnswer' : rightAnswer, 'responseIndex': responseIndex, 'responseWords' : responseWords, 'LevScore' : levDist}
+# def resultsQtreatments(responseDic,qIndex=4):
+#     
+#     if qIndex==3:
+#         
+# 
+#         print "blah"
+#     
+#     if qIndex==4:
+#         rightAnswer = responseDic[qIndex]['question']['rightAnswer']
+#         #print responsesDic[qIndex]['response']['choices']
+#         responseIndex = np.array(map(int,responseDic[qIndex]['response']['choices']))-1
+#         responseWords = list(responseDic[qIndex]['response']['input'][responseIndex])
+#         
+#         rightAnswer.sort()
+#         responseWords.sort()
+#         
+#         levDist = distance.levenshtein(rightAnswer,responseWords)
+#         return {'rightAnswer' : rightAnswer, 'responseIndex': responseIndex, 'responseWords' : responseWords, 'LevScore' : levDist}
 
 
   
    
 def generateFinalQuestions(texts):   
     questions = [{"question" : "Please rank the articles you just read, by level of reading comfort:","choices" : [aDic[t]['title'] for t in texts],'type':'ordered_choice'},
-                 {"question" : "Please rank the articles by your level of concentration when reading.","choices" : [aDic[t]['title'] for t in texts],'type':'ordered_choice'},
                  {"question" : "What is your gender?", "choices": ["Female","Male"],'type':'unique_choice'},
                  {"question" : "How old are you (years since birth)?", 'type':'free_response'},
-                 {"question" : "Is English a native language for you?", "choices": ["Yes","No"],'type':'unique_choice'},
+                 {"question" : "Please tell us about your English level", "choices": ["Beginner","Intermediate","Advanced","Proficient","Native"],'type':'unique_choice'},
                  {"question" : "What is the highest academic degree you have achieved?", "choices": ["High School","Bachelor","Master","PhD"],'type':'unique_choice'},
                  {"question" : "Are you left-handed?", "choices": ["Right-handed","Left-handed","Ambidexterous"],'type':'unique_choice'},
                  {"question" : "Do you suffer any reading-related disabilities (e.g. dyslexia)?", "choices": ["Yes","No","I don't know"],'type':'unique_choice'},
@@ -505,17 +505,19 @@ def showFinalQuestionsTUI(texts):
     for q,qx in enumerate(questions):
         os.system("clear && printf '\e[3J'")
         print "Question %s/%s" %(q+1,len(questions)) 
-        
-#         if q['type'] == 'free_response':
-#             try:
-#                 niceTextDisplay(q['question'])
-#                 #print "(Press Enter to go to next question.)"
-#                 rStart = time.time()
-#                 r = raw_input()
-#                 rEnd = time.time()
-#                 print "\n\n"
-#             except NameError:
-#                 pass
+
+
+        if qx['type'] == 'free_response':
+            try:
+                niceTextDisplay(qx['question'],lineSleep=0.2)
+                os.system("tput cnorm")
+                rStart = time.time()
+                response = raw_input()
+                rEnd = time.time()
+                os.system("tput civis")
+                print "\n\n"
+            except NameError:
+                pass
 
 
         if qx['type'] == 'unique_choice':
@@ -548,7 +550,7 @@ def showFinalQuestionsTUI(texts):
                 print "%s. %s"%(i+1,c)
             print "\n"
             
-            r = {'input': qx['choices'],"choices" : []}
+            r = {'input': qx['choices'],'choices' : [-1]}
             rStart = time.time()
             
             while not sum(map(int,r['choices'])) == np.sum(range(1,i+2)):

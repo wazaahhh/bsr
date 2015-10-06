@@ -215,7 +215,7 @@ def runExperiment2(preliminaryTasks=True,randomTreatment=True, finalQuestions=Tr
         
         os.system("clear && printf '\e[3J'")    
         f = {'func' : bsr.RSVP, 'params' : (aDic[choice], treatment)}
-        type = "_"+f['params'][1]
+        type = "_" + f['params'][1]
         #print "task %s, %s"%(f['func'],type)
         J = f['func'](*f['params'])
         Jfinal[i] = J

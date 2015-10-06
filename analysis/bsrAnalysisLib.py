@@ -47,6 +47,46 @@ def retrieveExperiment(token):
     return expJson,listDic
 
 
+def checkResponseProperNouns(dic,tol=0.3):
+    
+    if dic['responses'].has_key('r2'):
+        key = 'r2'
+    else:
+         key = '2'
+    
+    ans = re.findall(r"[\w']+", ",".join(dic['responses'][key]['response']))
+    rans = np.array(dic['responses'][key]['question']['rightAnswer'].keys())
+    
+    l = len(rans)
+    lr = 0
+    for a in ans:
+        for ra in rans:
+            d = Levenshtein.distance(str(a),str(ra))/float(len(ra))
+            if d < tol:
+                print a,ra
+                lr += 1
+    return float(lr)/l
+
+
+def checkResponseCommonNouns(dic):
+    if dic['responses'].has_key('r3'):
+        key = 'r3'
+    else:
+         key = '3'
+    
+    ansIndex = dic['responses'][key]['response']['choices']
+    ans = np.array(dic['responses'][key]['response']['input'])[np.array(map(int,ansIndex))-1]
+    rans = np.array(dic['responses'][key]['question']['rightAnswer'])
+    score = len(np.intersect1d(ans,rans))/float(len(rans))
+    print score
+    return ans,rans,score
+
+def makeStatistics(dic):
+    charNumber = "".join(dic['exp']['words'])
+    t = dic['exp']['timestamps']
+    duration = t[-1]-t[0]
+    
+
 
 def plotRateEntropy(json):
     time = json['exp']['timestamps']
