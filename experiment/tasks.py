@@ -50,15 +50,17 @@ articles = ['bigPolluter',
          'indianFood',
          'marsOneShortened',
          'Ohmconnect',
-         'pressFreedomUS']
+         'pressFreedomUS',
+         'UberChangedMyLife']
 
 
-def getArticlesFromS3():
+def getArticlesFromS3(folder="in_use"):
     aDic = {}
     
+    #print folder
     for i,article  in enumerate(articles):
         #print i+1,article
-        r = requests.get('http://brainspeedr.s3.amazonaws.com/articles/in_use/%s.json'%article)
+        r = requests.get('http://brainspeedr.s3.amazonaws.com/articles/%s/%s.json'%(folder,article))
         if r.ok:
             J = json.loads(r.text)
             aDic[article] = J
@@ -316,11 +318,13 @@ def printRSVPinstructions(manualChoice=False,lineSleep=0.1):
     if manualChoice==False:
         niceTextDisplay('''We turn now to the "brain speed reader" experiment. You will be presented a list
         of texts to choose from, as well as a brain speed reader treatment.''',lineSleep=lineSleep)
-        niceTextDisplay('''During the experiment, try to modulate your concentration in order to control of word display speed, but don't worry if you don't feel any effect.''',lineSleep=lineSleep)
+        niceTextDisplay('''You will be presented articles using Rapid Serial Visual Presentation (RSVP). 
+        Try to remember as much as you can from the text.''',lineSleep=lineSleep)
         print "\n"
         niceTextDisplay('''After each text you will be asked to answer 5 short questions:''',lineSleep=lineSleep)
     else:
-        niceTextDisplay('''Now we turn to the "brain speed reader" experiment. You will be presented some articles using Rapid Serial Visual Presentation (RSVP) at varying speed. During the experiment, you can try to modulate your concentration to control of word display speed''')
+        niceTextDisplay('''Now we turn to the "brain speed reader" experiment. You will be presented articles using Rapid Serial Visual Presentation (RSVP). 
+        Try to remember as much as you can from the text.''')
         print "\n"
         niceTextDisplay('''After each text you will be asked to answer 5 short questions:''',lineSleep=lineSleep)
          
@@ -346,12 +350,12 @@ def generateQuestions(articleJson):
     
     q3 = question3(articleJson,max=6)
     
-    questions = [{'question':'How familiar are you with the topic of this article? (on a scale from 0 to 10; Press Enter to continue)', 'type':'multiple_choice_scale'},
+    questions = [{'question':'How familiar were you with the topic of this article BEFORE reading? (on a scale from 0 to 10; Press Enter to continue)', 'type':'multiple_choice_scale'},
                  {'question':'Please tell us briefly about the article you have just read. (max. 100 words; Press Enter to continue)', 'type':'free_response'},
                  {'question':'Can you remember people, places, organizations and institutions mentioned in the article? (Enter names separated by commas; Press Enter to continue)', 'type':'free_recall','rightAnswer' : articleJson['properNouns']},
-                 {'question':'Which of these words appeared in the text? (Enter text numbers separated by commas; Press Enter to continue)', 'type':'multiple_choice', 'choices': q3['wordlist'], 'rightAnswer' : q3['textNouns']},
+                 {'question':'Which of these words appeared in the text (there may be multiple items)? (Enter text numbers separated by commas; Press Enter to continue)', 'type':'multiple_choice', 'choices': q3['wordlist'], 'rightAnswer' : q3['textNouns']},
                  {'question':'How comfortable did you feel, when speed reading this text? (on a scale from 0 to 10; Press Enter to continue)', 'type':'multiple_choice_scale'},
-                 {'question':'How much did you have to concentrate, when speed reading this text? (on a scale from 0 to 10; Press Enter to continue)', 'type':'multiple_choice_scale'}
+                 {'question':'How much did you like reading this text? (on a scale from 0 to 10; Press Enter to continue)', 'type':'multiple_choice_scale'}
             ]
     
     return questions
@@ -365,6 +369,8 @@ def showQuestionsTUI(articleJson):
     responses = {}
     
     for q,qx in enumerate(questions):
+        
+        response = {}
         
         os.system("clear && printf '\e[3J'")
         print "Question %s/%s" %(q+1,len(questions)) 
@@ -457,8 +463,8 @@ def showQuestionsTUI(articleJson):
 
   
    
-def generateFinalQuestions(texts):   
-    questions = [{"question" : "Please rank the articles you just read, by level of reading comfort:","choices" : [aDic[t]['title'] for t in texts],'type':'ordered_choice'},
+def generateFinalQuestions(texts):
+    questions = [{"question" : "Please rank your experience for the articles you just read:","choices" : [aDic[t]['title'] for t in texts],'type':'ordered_choice'},
                  {"question" : "What is your gender?", "choices": ["Female","Male"],'type':'unique_choice'},
                  {"question" : "How old are you (years since birth)?", 'type':'free_response'},
                  {"question" : "Please tell us about your English level", "choices": ["Beginner","Intermediate","Advanced","Proficient","Native"],'type':'unique_choice'},
@@ -512,7 +518,7 @@ def showFinalQuestionsTUI(texts):
                 niceTextDisplay(qx['question'],lineSleep=0.2)
                 os.system("tput cnorm")
                 rStart = time.time()
-                response = raw_input()
+                r = raw_input()
                 rEnd = time.time()
                 os.system("tput civis")
                 print "\n\n"
@@ -554,7 +560,7 @@ def showFinalQuestionsTUI(texts):
             rStart = time.time()
             
             while not sum(map(int,r['choices'])) == np.sum(range(1,i+2)):
-                input = raw_input("Enter comma separated numbers corresponding to articles (most comfortable / higher attention first): ")
+                input = raw_input("Enter comma separated numbers corresponding to articles (most enjoyed text reading first): ")
                 input = input.split(",")
                 try:
                     if sum(map(int,input)) == np.sum(range(1,i+2)):

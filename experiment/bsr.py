@@ -16,7 +16,8 @@ articles = ['bigPolluter',
          'indianFood',
          'marsOneShortened',
          'Ohmconnect',
-         'pressFreedomUS']
+         'pressFreedomUS',
+         ]
 
 
 def uplodJson(Json,token,task,compress=False):
@@ -270,9 +271,11 @@ def runTest():
     MW.qualityCheckLoop()
 
     time.sleep(5)
-    aDic = listArticles(folder="in_use")
+    aDic = getArticlesFromS3()
+    aDic.keys()
+    
     treatment = "bsr+"
-    J= bsr.RSVP(aDic[1],treatment)
+    J= bsr.RSVP(aDic['UberChangedMyLife'],treatment)
     #J= bsr.RSVP(aDic[1],treatment)
     return J
 
