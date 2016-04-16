@@ -145,7 +145,7 @@ def runExperiment2(preliminaryTasks=True,randomTreatment=True, finalQuestions=Tr
                 (ii) select "Set up bluetooth device", 
                 (iii) select 'press on/pair button on the headset),
                 (iv) when the mindwave appears, click "add" and finish.
-                (v) Place the headset on your head, with the sensors on your left forehead.''')
+                (v) Place the headset on your head, with the sensors on your left forehead.''',lineSleep=0.5)
     input= raw_input("(Press Enter to continue)")
 
     
@@ -272,10 +272,10 @@ def runTest():
 
     time.sleep(5)
     aDic = getArticlesFromS3()
-    aDic.keys()
+    #print aDic.keys()
     
     treatment = "bsr+"
-    J= bsr.RSVP(aDic['UberChangedMyLife'],treatment)
+    J= bsr.RSVP(aDic['Ohmconnect'],treatment)
     #J= bsr.RSVP(aDic[1],treatment)
     return J
 
@@ -288,6 +288,7 @@ if __name__ == '__main__':
     global treatments
     treatments = ['cst','bsrPlus','bsrMinus']
     
+    #runTest()
     #J = runExperiment(lenExp=4)
-    #runExperiment2(preliminaryTasks=False,randomTreatment=True, finalQuestions=True)
+    #runExperiment2(preliminaryTasks=False,randomTreatment=True, finalQuestions=False)
     
