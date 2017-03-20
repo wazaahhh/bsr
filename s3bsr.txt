@@ -1,0 +1,2 @@
+User Name,Access Key Id,Secret Access Key
+"bsr",AKIAJRRWXVMYGPRWDC4A,o+hpamZwJtTwc49I0JCgUz0IY0NnHkYkE1f8MSnT

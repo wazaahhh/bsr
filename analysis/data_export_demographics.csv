@@ -1,0 +1,11 @@
+participantId,PreferedTreatmentRank,Sex,Age,EnglishLevel,HighestDegreAchieved,RightLeftHanded,AttentionDisorder,Drugs,SpeedReading
+b527b,[6 7 8 5],Male,{u'input': [u'Female', u'Male'], u'choices': u'2'},Native,Master,Right-handed,No,No,No,No,
+9a02b,[8 5 6 7],Male,{u'input': [u'Female', u'Male'], u'choices': u'2'},Proficient,Master,Left-handed,No,No,No,No,
+74712,[6 8 7 5],Male,{u'input': [u'Female', u'Male'], u'choices': u'2'},Proficient,Master,Right-handed,No,I don't know,No,No,
+46dfb,[7 8 5 6],Male,35,Proficient,Master,Right-handed,No,I don't know,No,Yes,
+ad3fb,[6 5 7 8],Female,50,Native,Master,Right-handed,No,No,No,No,
+474f1,[7 6 8 5],Male,26,Proficient,Bachelor,Right-handed,No,No,No,No,
+b9817,[8 5 7 6],Female,27,Native,Bachelor,Right-handed,No,No,No,No,
+35d1b,[8 5 6 7],Male,25,Native,Bachelor,Right-handed,No,No,No,No,
+251a6,[5 8 6 7],Male,25,Native,Bachelor,Right-handed,No,No,No,No,
+5534e,[7 6 8 5],Male,30,Native,Master,Right-handed,No,No,No,No,

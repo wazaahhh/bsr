@@ -1,0 +1,122 @@
+8db55 : Thomas (6 treatments)
+
+a1ea2 : Marie (aborted => error)
+68cdc : Marie (complete experiment,choicemode)
+
+b0384 : Thomas (testing)
+1beb8 : Thomas (testing)
+92647 : Christian
+
+Swissnex : 
+
+ac3ef : Florian Bienfelt
+f62ff : Cyril Dorsaz
+29979 : Dominic Sutter
+d6dbd : Silvana Rohner
+2cd39 : Julia Kuhn
+85d6e : Laura Erickson
+
+5f615 : Andrew Liou
+
+94460 : Tapan
+
+
+9cf07 : Me (Testing)
+fdec0 : Me (testing)
+ff19b : Me (testing)
+0bd24 : Me (testing => done to the end)
+fae02 : testing all texts
+
+
+b527b : Marshall
+9a02b : Andreas
+74712 : Johannes
+
+46dfb : Guillaume
+ad3fb : Becki (some problems with questions)
+
+474f1 : Migio
+b9817 : Noura
+35d1b: Nick
+251a6 : Max
+5534e : Seb
+
+Some comments by Becki:
+#how familiar BEFORE reading?
+#Which text did you enjoy/like most ?
+#Which of these words appeared in the text? => make clear there can be multiple
+#How comfortable did you feel, when speed reading this text? => weird => fix it
+
+        
+update 10 August 2016
+
+d6aee : Holger
+c3dc8 : Corrado
+e422f : Flore
+b37bc : Alexandre     
+bbe1a : Marie Christine   
+db470 : Margaux
+21c2e : Gwenaël
+        
+
+
+to do list:
+
+- compute scores
+- compute perception
+- remove eye-blink online (find a simple method)
+
+
+Paper:
+
+Introduction:
+- Neurofeedback
+- RVSP 
+- control RVSP as a form of feedback
+
+Hypotheses:
+1. control or not control rate
+2. why control (in relation with word length)? => cf paper on time to read words (logarithm)
+3. how control (in relation with EEG signal from Entropy to power spectrum)?
+
+
+Method:
+- design
+- treatments
+
+Results:
+- those who control, and the others
+- modulation of entropy in the vicinity of large word: sometimes before, sometimes after
+- modulation of entropy regarding treatment bsrPlus,bsrMinus
+- effects on / implications for comprehension (to do) :
+	+ across treatments
+
+
+
+privacy paper:
+- conditional probability of word length given entropy
+- how many users reading the same text are required to re-identify (there may be a tradeoff between this and the next question => you can re-identify shorter texts if you know that more people read this text).
+- how much of the text is necessary to re-identify (how certainty grows accordingly)? => here we can make a simple assessment / argument of how hard it becomes to discriminate a text as the corpus gets larger. (i.e. measuring unicity as a function of length => the longer the vector, the more likely the ordered combination of word lengths becomes unique.)
+- capacity to discriminate a text from another is related to its unicity (cosim measure of word lengths until n should be fine)
+- re-identification of user with entropy?
+
+- hamming theory / distance => coding theory
+
+do -1,0,1 instead of continuous
+show on the graph where the small and larger words
+heuristic search on the entropy / choice of the running window to see whether it improves the joint pdf
+
+
+
+Final Question : b37bc
+1. Please rank your experience for the articles you just read:
+Freedom of Speech (1), Environment New Jersey (2), Indian Food (3)
+2. Gender : Male
+3. Age: 27
+4. Please tell us about your English level : Advanced
+5. What is the highest academic degree you have achieved? : Master
+6. Are you left-handed? Right-Handed
+7. Do you suffer any reading-related disabilities (e.g. dyslexia)? No
+8. Do you suffer any form attention disorder (e.g., ADD, ADHD)? No
+9. Do you take any psychotropic drugs (e.g. anti-depressants, psycho-stimulants, sleeping pills)? No
+10. Have you ever practiced any speed-reading or mental calculation techniques? No

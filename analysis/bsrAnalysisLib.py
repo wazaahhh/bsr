@@ -1,6 +1,7 @@
 import sys
 import numpy as np
 import pylab as pl
+
 from scipy import stats as S
 
 import boto
@@ -9,12 +10,16 @@ import json
 import re
 
 sys.path.append("/Users/maithoma/work/github/brainlib/")
+sys.path.append("/Users/maithoma/work/github/bsr/analysis/")
+sys.path.append("/Users/maithoma/work/github/bsr/experiment/")
+
 from pspectrumlib import *
 
 sys.path.append("/Users/maithoma/work/python/")
 from tm_python_lib import *
 import adaptive_kernel_tom as AK
 
+rootDir = "/Users/maithoma/work/github/bsr/analysis/"
 
 fig_width_pt = 420.0  # Get this from LaTeX using \showthe\columnwidth
 inches_per_pt = 1.0 / 72.27  # Convert pt to inch
@@ -647,3 +652,12 @@ def explorePriorEntropy(J,Jlist,treatment):
 
 
     print normalize(sAll)
+
+
+def RSVP_latency(expdic):
+    '''Measures time latency'''
+    recordedRate = np.diff(expdic['exp']['timestamps'])
+    rate = np.concatenate([[2],1./np.array(expdic['exp']['rate'])])
+    latency = rateTest[:-2] - tstamp
+
+    return np.abs(np.median(latency))

@@ -31,9 +31,9 @@ MW = readMindwave()
 # def listArticles(folder="in_use",display=False):
 #     aDic = {}
 #     listA = os.listdir("articles/%s"%folder)
-#     
+#
 #     if '.DS_Store' in listA: listA.remove('.DS_Store')
-#         
+#
 #     for i,article  in enumerate(listA):
 #         print i,article
 #         J = json.loads(open("articles/%s/%s"%(folder,article),'rb').read())
@@ -43,20 +43,20 @@ MW = readMindwave()
 #             print "%s. %s by %s (%s)\n"%(i+1,J['title'],J['author'],J['url'])
 #     return aDic
 
- 
+
 global articles
 articles = ['bigPolluter',
          'emojiShortened',
          'indianFood',
          'marsOneShortened',
          'Ohmconnect',
-         'pressFreedomUS',
-         'UberChangedMyLife']
+         'pressFreedomUS']
+         #'UberChangedMyLife']
 
 
 def getArticlesFromS3(folder="in_use"):
     aDic = {}
-    
+
     #print folder
     for i,article  in enumerate(articles):
         #print i+1,article
@@ -67,7 +67,7 @@ def getArticlesFromS3(folder="in_use"):
     return aDic
 
 global aDic
-aDic = getArticlesFromS3()  
+aDic = getArticlesFromS3()
 
 def listArticles(articles):
     descriptions = []
@@ -78,14 +78,14 @@ def listArticles(articles):
             keys.append(key)
         else:
             continue
-        
+
     return keys,descriptions
 
 def showArticleList(articles):
     keys,description = listArticles(articles)
     index = range(len(keys))
     random.shuffle(index)
-    
+
     for i,ix in enumerate(index):
         #print "\n"
         niceTextDisplay("%s. %s"%(i+1,description[ix]),lineSleep=0.1)
@@ -95,13 +95,13 @@ def showArticleList(articles):
         input= raw_input("Choose a text (1 to %s): "%len(index))
     except NameError:
         pass
-      
+
     return keys[index[int(input)-1]]
 #def chooseArticle(articles):
-    
-    
-    
-            
+
+
+
+
 
 def niceTextDisplay(text,lineSleep=1):
     L = ""
@@ -119,88 +119,88 @@ def showWord(str):
     w,h = getTerminalSize()
     os.system('clear')
     print "\n" * int((h-2)/2)
-    print " " * int((w-len(str))/2), str 
+    print " " * int((w-len(str))/2), str
     #print "\n" * int((h)/2-4)
 
 
 def blink5times():
     taskname = "Blink task"
     instruction = 'Blink when the word "blink" appears'
-    
+
     #print taskname
     print instruction
-    
+
     try:
-        input= raw_input("Press Enter to continue")
+        input= raw_input("(Press Enter to continue)")
     except NameError:
         pass
-    
+
     os.system("clear")
     showWord("x")
     time.sleep(2)
     os.system("clear")
     time.sleep(1)
 
-    
+
     blinkTimes = []
     MW.dumpBuffer()
     for b in range(5):
         blinkTimes.append(time.time())
         showWord('blink')
-        time.sleep(0.25)        
-        
+        time.sleep(0.25)
+
         print "\n" * 30
         time.sleep(2)
-        
-        
+
+
     eegData = MW.dumpBuffer()
     blinkTimes = {'blinkTimes' : blinkTimes, 'eegData' : eegData}
-        
+
     return blinkTimes
 
 def restingStateOpenEyes(duration=15):
     taskname = "Resting state open eyes"
     instruction = "Focus on the mark for %s seconds"%duration
-     
+
     #print taskname
     print instruction
-     
+
     try:
-        input= raw_input("Press Enter to continue")
+        input= raw_input("(Press Enter to continue)")
     except NameError:
-        pass   
-     
+        pass
+
     MW.dumpBuffer()
     os.system("clear")
     showWord("x")
     #print "\n" * 30
-     
+
     time.sleep(duration)
     rState = MW.dumpBuffer()
     #os.system("say 'wake up!'")
-     
+
     return {'eegData' : rState}
 
 
 def restingStateClosedEyes(duration=15):
     taskname = "Resting state closed eyes"
     instruction = "Close you eyes, relax, and focus on your breathing for %s seconds"%duration
-    
+
     #print taskname
     print instruction
-    
+
     try:
         input= raw_input("(Press Enter to continue)")
     except NameError:
-        pass   
-    
+        pass
+
     MW.dumpBuffer()
     os.system("clear")
-    
+
     time.sleep(duration)
     rState = MW.dumpBuffer()
     os.system("say 'wake up!'")
-    
+
     return {'eegData' : rState}
 
 
@@ -211,43 +211,45 @@ def doMath(iterations= 10, operation_duration = 2.3):
 
     #print taskname
     print instruction
-    
-    try:
-        input= raw_input("(Press Enter to continue)")
-    except NameError:
-        pass  
-
-    mathOps = {}
-    
-    MW.raw_data = []
-    for i in range(iterations):
-        n1 = random.randint(1,15)
-        n2 = random.randint(1,15)
-        mathOps[i] = {'time': time.time(), 'op':[n1,"x",n2]}        
-        showWord("%s x %s"%(n1,n2))
-        #print "\n" * 10
-        #print "\t" *5, "%s x %s"%(n1,n2)
-        #print "\n" * 10
-        time.sleep(operation_duration)
-       
-    eegData = MW.getRawEEG()
-    return {'operations': mathOps,'eegData' : eegData} 
-
-def readTextEnglish():
-    
-    readTextJson = json.loads(open("articles/ObamaCybersecurityShortened.json",'rb').read())    
-    
-    taskname = "Read Text"
-    instruction = "Read in silence and your own pace, the following short text."
-    #print taskname
-    print instruction  
 
     try:
         input= raw_input("(Press Enter to continue)")
     except NameError:
         pass
 
-    
+    mathOps = {}
+
+    MW.raw_data = []
+    for i in range(iterations):
+        n1 = random.randint(1,15)
+        n2 = random.randint(1,15)
+        operator = random.randint(0,2)
+        lOperators = ["x","x","+"]
+        mathOps[i] = {'time': time.time(), 'op':[n1,lOperators[operator],n2]}
+        showWord("%s %s %s"%(n1,lOperators[operator],n2))
+        #print "\n" * 10
+        #print "\t" *5, "%s x %s"%(n1,n2)
+        #print "\n" * 10
+        time.sleep(operation_duration)
+
+    eegData = MW.getRawEEG()
+    return {'operations': mathOps,'eegData' : eegData}
+
+def readTextEnglish():
+
+    readTextJson = json.loads(open("articles/ObamaCybersecurityShortened.json",'rb').read())
+
+    taskname = "Read Text"
+    instruction = "Read in silence and your own pace, the following short text."
+    #print taskname
+    print instruction
+
+    try:
+        input= raw_input("(Press Enter to continue)")
+    except NameError:
+        pass
+
+
     MW.dumpBuffer()
     os.system("clear && printf '\e[3J'")
     #print "%s \n Author:%s \n Source: %s"%(readTextJson['title'],readTextJson['author'],readTextJson['url'])
@@ -264,28 +266,74 @@ def readTextEnglish():
         pass
 
     readTxt = MW.dumpBuffer()
-    
+
     return {'eegData' : readTxt}
-# 
-# 
+
+
+def readTextEnglish2(lineSleep=0.1):
+
+    articleJson = json.loads(open("articles/ObamaCybersecurityShortened.json",'rb').read())
+
+    taskname = "Read Text"
+    instruction = "Read in silence and your own pace, the following short text."
+    #print taskname
+    print instruction
+
+    niceTextDisplay('''After reading, the text will disappear and you will be asked to answer 5 short questions:''',lineSleep=lineSleep)
+    niceTextDisplay('''1: Summarize article you have just read.''',lineSleep=lineSleep)
+    niceTextDisplay('''2: Recall people, places, organizations and institutions mentioned in the article.''',lineSleep=lineSleep)
+    niceTextDisplay('''3: Identify common words that have appeared in the text.''',lineSleep=lineSleep)
+    niceTextDisplay('''4: Reading comfort on a scale from 0 to 10.''',lineSleep=lineSleep)
+    niceTextDisplay('''5: Level of concentration achieved on a scale from 0 to 10.''',lineSleep=lineSleep)
+    print "\n"
+    #input= raw_input("(Press Enter to continue)")
+
+    try:
+        input= raw_input("(Press Enter to continue)")
+    except NameError:
+        pass
+
+
+    MW.dumpBuffer()
+    os.system("clear && printf '\e[3J'")
+    #print "%s \n Author:%s \n Source: %s"%(readTextJson['title'],readTextJson['author'],readTextJson['url'])
+    #text = "%s \n\n"%(re.sub("\| ","\n",readTextJson['content']))
+    text = articleJson['content']
+    #print "\n"
+    text = re.sub("\|","",text)
+    #for p in text.split("|"):
+    niceTextDisplay(text,lineSleep=0.5)
+
+    try:
+        input= raw_input("(Press Enter to answer questions)")
+    except NameError:
+        pass
+
+    responses = showQuestionsTUI(articleJson)
+
+    readTxt = MW.dumpBuffer()
+
+    return {'eegData' : readTxt,'responses' : responses}
+#
+#
 # def RSVP(articleJson,treatment):
-# 
+#
 #     taskname = "rsvp"
 #     instruction = '''You will see words displayed one at the time at some varying speed. As much as you can, try to get the general meaning of the text and try to memorize important key words, as well as important people, places, organizations and institutions '''
-# 
+#
 #     print taskname
 #     print instruction
-# 
+#
 #     try:
 #         input= raw_input("Press Enter to continue")
 #     except NameError:
 #         pass
-# 
+#
 #     MW.raw_data = []
 #     time.sleep(5)
 #     J = bsr.showWords(articleJson,treatment)
 #     eegData = MW.getRawEEG()
-# 
+#
 #     return {'exp' : J,'eegData' : eegData}
 
 
@@ -298,14 +346,14 @@ def randomCommonNounFromList(max):
 
 def printIntroInstructions(lineSleep=0.1):
         print "\n"
-        niceTextDisplay('''The brain speed reader experiment is about to start. 
+        niceTextDisplay('''The brain speed reader experiment is about to start.
                     Please make sure that you have paired the Neurosky Mindwave on your computer.''',lineSleep=lineSleep)
-        print "\n" 
+        print "\n"
         niceTextDisplay('''If you have not yet connected Neurosky Mindwave, please follow the following steps:''',lineSleep=lineSleep)
         niceTextDisplay('''1. Select the bluetooth menu (in Settings),''',lineSleep=lineSleep)
         niceTextDisplay('''2. Select "Set up bluetooth device,''',lineSleep=lineSleep)
         niceTextDisplay('''3. Press "on/pair" button on the Neurosky Mindwave headset,''',lineSleep=lineSleep)
-        niceTextDisplay('''4. When the Neurosky Mindwave appears on the bluetooth menu, 
+        niceTextDisplay('''4. When the Neurosky Mindwave appears on the bluetooth menu,
         select it, click "continue" and follow the next steps,''',lineSleep=lineSleep)
         niceTextDisplay('''5. Place the headset on your head, with the sensors on your left forehead.''',lineSleep=lineSleep)
         print "\n"
@@ -318,16 +366,16 @@ def printRSVPinstructions(manualChoice=False,lineSleep=0.1):
     if manualChoice==False:
         niceTextDisplay('''We turn now to the "brain speed reader" experiment. You will be presented a list
         of texts to choose from, as well as a brain speed reader treatment.''',lineSleep=lineSleep)
-        niceTextDisplay('''You will be presented articles using Rapid Serial Visual Presentation (RSVP). 
+        niceTextDisplay('''You will be presented articles using Rapid Serial Visual Presentation (RSVP).
         Try to remember as much as you can from the text.''',lineSleep=lineSleep)
         print "\n"
         niceTextDisplay('''After each text you will be asked to answer 5 short questions:''',lineSleep=lineSleep)
     else:
-        niceTextDisplay('''Now we turn to the "brain speed reader" experiment. You will be presented articles using Rapid Serial Visual Presentation (RSVP). 
+        niceTextDisplay('''Now we turn to the "brain speed reader" experiment. You will be presented articles using Rapid Serial Visual Presentation (RSVP).
         Try to remember as much as you can from the text.''')
         print "\n"
         niceTextDisplay('''After each text you will be asked to answer 5 short questions:''',lineSleep=lineSleep)
-         
+
     niceTextDisplay('''1: Summarize article you have just read.''',lineSleep=lineSleep)
     niceTextDisplay('''2: Recall people, places, organizations and institutions mentioned in the article.''',lineSleep=lineSleep)
     niceTextDisplay('''3: Identify common words that have appeared in the text.''',lineSleep=lineSleep)
@@ -338,7 +386,7 @@ def printRSVPinstructions(manualChoice=False,lineSleep=0.1):
 
 def question3(articleJson,max=6):
     textNouns = articleJson['nouns'].keys()
-    np.random.shuffle(textNouns)    
+    np.random.shuffle(textNouns)
     commonNouns = randomCommonNounFromList(max-1)
     textNouns = list(textNouns[:max-len(commonNouns)])
     wordlist = list(np.unique(commonNouns + textNouns))
@@ -347,9 +395,9 @@ def question3(articleJson,max=6):
 
 
 def generateQuestions(articleJson):
-    
+
     q3 = question3(articleJson,max=6)
-    
+
     questions = [{'question':'How familiar were you with the topic of this article BEFORE reading? (on a scale from 0 to 10; Press Enter to continue)', 'type':'multiple_choice_scale'},
                  {'question':'Please tell us briefly about the article you have just read. (max. 100 words; Press Enter to continue)', 'type':'free_response'},
                  {'question':'Can you remember people, places, organizations and institutions mentioned in the article? (Enter names separated by commas; Press Enter to continue)', 'type':'free_recall','rightAnswer' : articleJson['properNouns']},
@@ -357,26 +405,26 @@ def generateQuestions(articleJson):
                  {'question':'How comfortable did you feel, when speed reading this text? (on a scale from 0 to 10; Press Enter to continue)', 'type':'multiple_choice_scale'},
                  {'question':'How much did you like reading this text? (on a scale from 0 to 10; Press Enter to continue)', 'type':'multiple_choice_scale'}
             ]
-    
+
     return questions
 
 
 
- 
+
 def showQuestionsTUI(articleJson):
     '''asks questions on the terminal user interface (TUI)'''
-    questions = generateQuestions(articleJson)    
+    questions = generateQuestions(articleJson)
     responses = {}
-    
+
     for q,qx in enumerate(questions):
-        
+
         response = {}
-        
+
         os.system("clear && printf '\e[3J'")
-        print "Question %s/%s" %(q+1,len(questions)) 
-        
+        print "Question %s/%s" %(q+1,len(questions))
+
         response['q'] = qx['question']
-        
+
         if qx['type'] == 'free_response':
             try:
                 niceTextDisplay(qx['question'],lineSleep=0.2)
@@ -398,10 +446,10 @@ def showQuestionsTUI(articleJson):
                 rEnd = time.time()
                 os.system("tput civis")
                 print "\n\n"
-                
+
             except NameError:
                 pass
-        
+
         if qx['type'] == 'multiple_choice':
             try:
                 niceTextDisplay(qx['question'],lineSleep=0.2)
@@ -421,7 +469,7 @@ def showQuestionsTUI(articleJson):
                 print "\n\n"
             except NameError:
                 pass
-        
+
         if qx['type'] == 'multiple_choice_scale':
             try:
                 niceTextDisplay(qx['question'],lineSleep=0.2)
@@ -429,40 +477,40 @@ def showQuestionsTUI(articleJson):
                 rStart = time.time()
                 response['response'] = raw_input()
                 rEnd = time.time()
-                
+
                 os.system("tput civis")
                 print "\n\n"
                 print "\n\n"
             except NameError:
                 pass
-    
+
         responses["r" + str(q+1)] = {'t0': rStart, 't1' : rEnd, 'response' : response,'question' : qx}
-    
+
     return responses
-    
+
 
 # def resultsQtreatments(responseDic,qIndex=4):
-#     
+#
 #     if qIndex==3:
-#         
-# 
+#
+#
 #         print "blah"
-#     
+#
 #     if qIndex==4:
 #         rightAnswer = responseDic[qIndex]['question']['rightAnswer']
 #         #print responsesDic[qIndex]['response']['choices']
 #         responseIndex = np.array(map(int,responseDic[qIndex]['response']['choices']))-1
 #         responseWords = list(responseDic[qIndex]['response']['input'][responseIndex])
-#         
+#
 #         rightAnswer.sort()
 #         responseWords.sort()
-#         
+#
 #         levDist = distance.levenshtein(rightAnswer,responseWords)
 #         return {'rightAnswer' : rightAnswer, 'responseIndex': responseIndex, 'responseWords' : responseWords, 'LevScore' : levDist}
 
 
-  
-   
+
+
 def generateFinalQuestions(texts):
     questions = [{"question" : "Please rank your experience for the articles you just read:","choices" : [aDic[t]['title'] for t in texts],'type':'ordered_choice'},
                  {"question" : "What is your gender?", "choices": ["Female","Male"],'type':'unique_choice'},
@@ -483,18 +531,18 @@ def multipleChoiceQuestion(listChoices):
     os.system("tput cnorm")
     for i,c in enumerate(listChoices):
         print "%s. %s"%(i+1,c)
-        
+
     l = len(listChoices)
-    
+
     r = raw_input("(Enter any value between 1 and %s) : "%l)
     while int(r) not in range(1,l+1):
         r = raw_input("incorrect choice, please select a value between 1 and %s) : "%l)
     return listChoices[int(r)-1]
-    
+
 
 def showFinalQuestionsTUI(texts):
     questions = generateFinalQuestions(texts)
-    
+
     instruction = "To finish, we wish to ask %s quick questions." %(len(questions))
     #print taskname
     print instruction
@@ -505,12 +553,12 @@ def showFinalQuestionsTUI(texts):
         pass
 
     responses = {}
-        
+
     MW.dumpBuffer()
     os.system("tput cnorm")
     for q,qx in enumerate(questions):
         os.system("clear && printf '\e[3J'")
-        print "Question %s/%s" %(q+1,len(questions)) 
+        print "Question %s/%s" %(q+1,len(questions))
 
 
         if qx['type'] == 'free_response':
@@ -531,13 +579,13 @@ def showFinalQuestionsTUI(texts):
             for i,c in enumerate(qx['choices']):
                 print "%s. %s"%(i+1,c)
             print "\n"
-            
+
             r = {'input': qx['choices'],'choices' : -1}
             rStart = time.time()
-            
+
             while not int(r['choices']) in range(1,len(qx['choices'])+1):
                 input = raw_input("(Enter any value between 1 and %s) : "%len(qx['choices']))
-                
+
                 try:
                     if int(input) in range(1,len(qx['choices'])+1):
                         r['choices'] = input
@@ -545,20 +593,20 @@ def showFinalQuestionsTUI(texts):
                         print "incorrect choice, please select a value between 1 and %s) : "%len(qx['choices'])
                 except:
                     print "incorrect choice, please select a value between 1 and %s) : "%len(qx['choices'])
-                    
+
             rEnd = time.time()
         print "\n\n"
-            
+
 
         if qx['type'] == 'ordered_choice':
             niceTextDisplay(qx['question'])
             for i,c in enumerate(qx['choices']):
                 print "%s. %s"%(i+1,c)
             print "\n"
-            
+
             r = {'input': qx['choices'],'choices' : [-1]}
             rStart = time.time()
-            
+
             while not sum(map(int,r['choices'])) == np.sum(range(1,i+2)):
                 input = raw_input("Enter comma separated numbers corresponding to articles (most enjoyed text reading first): ")
                 input = input.split(",")
@@ -567,12 +615,12 @@ def showFinalQuestionsTUI(texts):
                         r['choices'] = input
                 except:
                     print "Incorrect entry :-( Please try again: "
-                    
+
             rEnd = time.time()
-            
-        print "\n\n"    
+
+        print "\n\n"
         responses[q+1] = {'t0': rStart, 't1' : rEnd, 'response' : r,'question': qx}
-    
+
     eegData = MW.dumpBuffer()
     responses['eegData'] = eegData
     return responses
@@ -585,19 +633,19 @@ def sendQuestions(self,questions):
 class bsr():
     def __init__(self):
         self.onText = True
-        
+
         self.initRate = 0.125
         self.currentRate = self.initRate
         self.rate = [self.initRate]
         self.words = ['x']
         self.time = [0]
-        
+
         '''BSR parameters'''
         self.entropy_window = 512
         self.deque = 10
         self.adaptivity = -0.005
         self.currentEntropy = 0
-        self.entropy = [0]
+        self.entropy = [self.currentEntropy]
         self.normalized_entropy = [0]
 
         '''AR parameters'''
@@ -605,7 +653,7 @@ class bsr():
         self.ARphi=0.075
         self.ARsigma=0.001
 
-    
+
     def AR1(self):
         ar1 = (1.) * self.currentRate + np.random.normal(scale=self.ARsigma)
         if ar1 < 0:
@@ -616,7 +664,7 @@ class bsr():
     def getCurrentEntropy(self):
         #print MW.raw_data[-10:]
         rawEEG = zip(*MW.raw_data[-self.entropy_window:])[2]
-        
+
         try:
             if np.median(rawEEG) > 150:
                 ''' If raw data exhibits large deviation, take the median of the entropy on the last 10 measures'''
@@ -625,8 +673,8 @@ class bsr():
                 #print rawEEG
                 #print compute_entropy(rawEEG,1)
                 self.entropy.append(compute_entropy(rawEEG,1))
-            
-            self.normalized_entropy.append(normalize(self.entropy[-self.deque:])[-1])                
+
+            self.normalized_entropy.append(normalize(self.entropy[-self.deque:])[-1])
             self.currentEntropy = self.normalized_entropy[-1]
         except:
             pass
@@ -638,42 +686,42 @@ class bsr():
                 self.currentRate = self.currentRate*(1 + (self.adaptivity*self.currentEntropy))
             except:
                 pass
-        
+
         elif treatment=="bsrMinus":
             try:
                 self.getCurrentEntropy()
                 self.currentRate = self.currentRate*(1 - (self.adaptivity*self.currentEntropy))
             except:
                 pass
-            
+
         elif treatment=="ar1":
             self.getCurrentEntropy()
             self.currentRate = self.AR1()
-        
+
         elif treatment=="cst":
             self.getCurrentEntropy()
             self.currentRate = self.currentRate
-        
+
         if self.currentRate > 0.175:
             '''introduce a lower speed broundary'''
             self.currentRate = 0.175
-            
+
         if self.currentRate < .030:
             '''introduce a higher speed broundary'''
             self.currentRate = .030
-            
-        
-        
+
+
+
     def RSVP(self,articleJson,treatment):
-        
+
         taskname = "rsvp"
-        instruction = '''You will see words displayed one at the time at some varying speed. 
-        As much as you can, try to get the general meaning of the text and try to memorize 
+        instruction = '''You will see words displayed one at the time at some varying speed.
+        As much as you can, try to get the general meaning of the text and try to memorize
         important key words, as well as important people, places, organizations and institutions.'''
 
         MW.dumpBuffer()
         time.sleep(3)
-    
+
         #print taskname
         print "\n"
         print niceTextDisplay(instruction,lineSleep=0.2)
@@ -691,24 +739,24 @@ class bsr():
         self.words = ['x']
         self.time = [time.time()]
         self.t0 = self.time[0]
-        
+
         txt = articleJson['content']
         wordListRead = txt.split()
-        
+
         self.printWord('x')
         time.sleep(2)
-        
-        
-        for word in wordListRead:            
+
+
+        for word in wordListRead:
             self.updateRate(treatment)
             self.rate.append(self.currentRate)
             self.words.append(word)
             self.time.append(time.time())
-            
+
             if word[-1] in [",","-"]:
                 self.printWord(word)
                 time.sleep(self.currentRate*1.5)
-            elif word[-1] in [".",";",":"]:
+            elif word[-1] in [".",";",":","!","?"]:
                 self.printWord(word)
                 time.sleep(self.currentRate*3)
             elif word[-1]=="|":
@@ -717,35 +765,35 @@ class bsr():
             else:
                 self.printWord(word)
                 time.sleep(self.currentRate)
-        
+
         #print self.time
         t = [ item - self.t0 for item in self.time]
         t = t[:]
-        
+
         time.sleep(1)
         os.system("tput cnorm")
         responses = showQuestionsTUI(articleJson)
         os.system("tput civis")
-        
+
         eegData = MW.getRawEEG()
-        
-        expDic  = {'eegData':eegData, 
+
+        expDic  = {'eegData':eegData,
                    "responses" : responses,
                    'exp': {'rate': self.rate,
                            'entropy' : self.entropy,
                            'normalized_entropy' : self.normalized_entropy,
-                           'words' : self.words, 
+                           'words' : self.words,
                            'timestamps' : t,
-                           't0': self.t0, 
+                           't0': self.t0,
                            'adaptivity' : self.adaptivity,
                            'entropy_window' : self.entropy_window,
                            'deque' : self.deque
                            }
                    }
-               
-        
+
+
         return expDic
-    
+
         '''
         MW.raw_data = []
         time.sleep(5)
@@ -753,42 +801,42 @@ class bsr():
         eegData = MW.getRawEEG()
         return {'exp' : J,'eegData' : eegData}
         '''
-    
+
     def printWord(self,word):
         showWord(word)
-        
+
         '''
         print "\n" * 10
         print "\t" *5, "%s"%(word)
         #print "\t  " *4, "(%.2f,%.0f)"%(self.currentEntropy,self.currentRate)
         print "\n" * 10
         '''
-        
+
         #print "\n" * 5
         #print "\t" *3, "%s"%(word)
         #print "\t" *3, "(%.3f)"%(self.currentRate)
         #print "\n" * 5
-    
+
 
     def sendWord(self,word):
         self.postToServer('/show_word', json.dumps({'word': word}))
 
     '''
     def runTest(self):
-        
-    
+
+
         start = time.time()
         now = time.time()
-    
+
         tEEG = threading.Thread(target=MW.readRawEEG)
         tEEG.daemon = True
         tEEG.start()
-    
-    
+
+
         MW.tryConnection(verbose = True)
-    
+
         time.sleep(2)
-        
+
         self.getCurrentEntropy()
         print self.currentEntropy
         time.sleep(2)
@@ -800,7 +848,7 @@ class bsr():
     '''
 
 
-    
+
 
 
 def runTest():
@@ -821,12 +869,9 @@ def runTest():
 
 
 
-    
+
 if __name__ == '__main__':
     print "blah"
-    
+
 
     #J = runTest()
-    
-
-    
